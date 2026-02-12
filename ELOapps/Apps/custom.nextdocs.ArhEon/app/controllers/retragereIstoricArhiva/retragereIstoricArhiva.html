@@ -1,0 +1,784 @@
+<div class="container" ng-controller="RetragereIstoricArhiva as ctrl">
+
+	<div class="box-border" style="margin-bottom: 20px;">
+		<form name="frmRetragere" class="hide-css-required" novalidate>
+
+			<table class="full-width mt6" id="tableForm">
+
+				<!-- START - formular solicitare -->
+				<tr>
+					<td colspan="6" class="cBlue1 text-left"><span>Detalii solicitare</span></td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Numar inregistrare</td>
+					<td class="text-left">
+						<input class="form-control" readonly>
+					</td>
+					<td class="text-left">Data inregistrare</td>
+					<td class="text-left">
+						<input class="form-control" ng-value="ctrl.now | date:'dd.MM.yyyy HH:mm'" readonly>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Motiv</td>
+					<td class="text-left"
+						ng-class="{'has-error': frmRetragere.motiv_retragere.$touched && !ctrl.model.motiv_retragere}">
+						<select class="form-control" ng-model="ctrl.model.motiv_retragere" name="motiv_retragere"
+							ng-options="m for m in ctrl.optMotiv" required>
+							<option value="">Selecteaza...</option>
+						</select>
+						<div class="input-error-text" ng-show="frmRetragere.motiv_retragere.$touched
+								&& frmRetragere.motiv_retragere.$error.required">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+
+					<td class="text-left">Status</td>
+					<td class="text-left">
+						<input class="form-control" ng-model="ctrl.model.status_preview" readonly>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Modalitate livrare</td>
+					<td class="text-left"
+						ng-class="{'has-error': frmRetragere.modalitate_livrare.$touched && !ctrl.model.modalitate_livrare}">
+						<select class="form-control" ng-model="ctrl.model.modalitate_livrare" name="modalitate_livrare"
+							ng-options="m for m in ctrl.optLivrare" required>
+							<option value="">Selecteaza...</option>
+						</select>
+						<div class="input-error-text" ng-show="frmRetragere.modalitate_livrare.$touched
+								&& frmRetragere.modalitate_livrare.$error.required">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+
+					<td class="text-left">Urgent</td>
+					<td class="text-left">
+						<input type="checkbox" class="arh-checkbox" ng-model="ctrl.model.urgent">
+					</td>
+				</tr>
+
+				<tr ng-if="ctrl.model.modalitate_livrare == 'Curier'">
+					<td class="text-left">Localitate</td>
+					<td class="text-left"
+						ng-class="{'has-error': frmRetragere.localitate.$touched && !ctrl.model.localitate}">
+						<input type="text" class="form-control" ng-model="ctrl.model.localitate" name="localitate"
+							maxlength="20" required />
+						<div class="input-error-text" ng-show="frmRetragere.localitate.$touched
+								&& frmRetragere.localitate.$error.required">
+							Acest camp este obligatoriu
+						</div>
+						<div class="input-error-text"
+							ng-show="frmRetragere.localitate.$touched && frmRetragere.localitate.$error.maxlength">
+							Maxim 20 caractere
+						</div>
+					</td>
+
+					<td class="text-left">Numar telefon</td>
+					<td class="text-left"
+						ng-class="{'has-error': frmRetragere.telefon.$touched && !ctrl.model.telefon}">
+						<input type="text" class="form-control" ng-model="ctrl.model.telefon" name="telefon"
+							maxlength="14" required />
+						<div class="input-error-text" ng-show="frmRetragere.telefon.$touched
+								&& frmRetragere.telefon.$error.required">
+							Acest camp este obligatoriu
+						</div>
+						<div class="input-error-text"
+							ng-show="frmRetragere.telefon.$touched && frmRetragere.telefon.$error.maxlength">
+							Maxim 14 caractere
+						</div>
+					</td>
+				</tr>
+
+				<tr ng-if="ctrl.model.modalitate_livrare == 'Curier'">
+					<td class="text-left">Adresa</td>
+					<td colspan="3" class="text-left"
+						ng-class="{'has-error': frmRetragere.adresa.$touched && !ctrl.model.adresa}">
+						<input type="text" class="form-control" ng-model="ctrl.model.adresa" name="adresa"
+							maxlength="105" required />
+						<div class="input-error-text" ng-show="frmRetragere.adresa.$touched
+								&& frmRetragere.adresa.$error.required">
+							Acest camp este obligatoriu
+						</div>
+						<div class="input-error-text"
+							ng-show="frmRetragere.adresa.$touched && frmRetragere.adresa.$error.maxlength">
+							Maxim 105 caractere
+						</div>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Departament</td>
+					<td class="text-left" style="max-width: 150px;">
+						<ui-select ng-model="ctrl.model.departament">
+							<ui-select-match placeholder="Selecteaza..."
+								ng-attr-title="{{$select.selected.nume}}">{{$select.selected.nume}}</ui-select-match>
+							<ui-select-choices repeat="d in ctrl.optiuniDepartament | filter: $select.search">
+								<div ng-bind="d.nume"></div>
+							</ui-select-choices>
+						</ui-select>
+
+						<div class="input-error-text" ng-show="ctrl.submitted && !ctrl.comanda.departament">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+				</tr>
+
+				<tr>
+					<td colspan="6" class="text-left">Observatii</td>
+				</tr>
+				<tr>
+					<td colspan="6" class="text-left">
+						<textarea class="form-control" ng-model="ctrl.model.observatii" maxlength="120">
+						</textarea>
+						<div class="input-error-text"
+							ng-show="frmRetragere.observatii.$touched && frmRetragere.observatii.$error.maxlength">
+							Maxim 120 caractere
+						</div>
+					</td>
+				</tr>
+
+				<!-- END - formular solicitare -->
+
+				<!-- START - cautare documente -->
+
+				<tr>
+					<td colspan="6" class="cBlue1 text-left"><span>Cautare documente istoric arhiva</span></td>
+				</tr>
+
+				<tr>
+					<td colspan="6" style="padding-top: 6px;">
+						<table style="width: 100%;">
+							<tr>
+								<!-- STANGA: filtre + date -->
+								<td style="vertical-align: top;">
+									<table style="border-left: 2px solid #81b1ec;">
+										<tbody>
+
+											<!-- RAND 1: Data/Ora Inregistrare - START -->
+											<tr>
+												<td>
+													<table class="table-hover"
+														style="border-left: 2px solid #8fff62;
+                                                                  background: linear-gradient(122deg, #ecffe5 0%, rgba(0,255,51,0) 31%);">
+														<tbody>
+															<tr>
+																<td>
+																	<select class="form-control"
+																		style="min-width: 200px; margin: 0;" disabled>
+																		<option>Data Arhivare</option>
+																	</select>
+																</td>
+																<td>
+																	<select class="form-control"
+																		style="min-width: 200px; margin: 0;"
+																		ng-model="ctrl.model.data_inceput_op" disabled>
+																		<option value=">=">Mai mare sau egal cu</option>
+																	</select>
+																</td>
+																<td style="min-width: 240px;">
+																	<div style="display:flex; align-items:center;">
+																		<input type="number" class="form-control"
+																			style="max-width: 180px; display:inline-block;"
+																			min="1900" max="2100"
+																			ng-model="ctrl.model.data_inceput_year"
+																			placeholder="Anul (optional)">
+
+
+																		<!-- <input type="number" min="0" max="23"
+																			placeholder="HH" class="form-control"
+																			style="width: 60px; margin-left:6px;"
+																			ng-model="ctrl.model.data_inceput_hh">
+																		<span
+																			style="padding: 0 4px; margin: 0;">:</span>
+																		<input type="number" min="0" max="59"
+																			placeholder="MM" class="form-control"
+																			style="width: 60px;"
+																			ng-model="ctrl.model.data_inceput_mm"> -->
+																	</div>
+																</td>
+																<td style="width: 60px;"></td>
+																<td style="width: 40px;"></td>
+															</tr>
+														</tbody>
+													</table>
+												</td>
+											</tr>
+
+											<!-- RAND 2: Data/Ora Inregistrare - END -->
+											<tr>
+												<td>
+													<table class="table-hover"
+														style="border-left: 2px solid #8fff62;
+                                                                  background: linear-gradient(122deg, #ecffe5 0%, rgba(0,255,51,0) 31%);">
+														<tbody>
+															<tr>
+																<td>
+																	<select class="form-control"
+																		style="min-width: 200px; margin: 0;" disabled>
+																		<option>Data Arhivare</option>
+																	</select>
+																</td>
+																<td>
+																	<select class="form-control"
+																		style="min-width: 200px; margin: 0;"
+																		ng-model="ctrl.model.data_sfarsit_op" disabled>
+																		<option value="<=">Mai mic sau egal cu</option>
+																	</select>
+																</td>
+																<td style="min-width: 240px;">
+																	<div style="display:flex; align-items:center;">
+																		<input type="number" class="form-control"
+																			style="max-width: 180px; display:inline-block;"
+																			min="1900" max="2100"
+																			ng-model="ctrl.model.data_sfarsit_year"
+																			placeholder="Anul (optional)">
+
+
+																		<!-- <input type="number" min="0" max="23"
+																			placeholder="HH" class="form-control"
+																			style="width: 60px; margin-left:6px;"
+																			ng-model="ctrl.model.data_sfarsit_hh">
+																		<span
+																			style="padding: 0 4px; margin: 0;">:</span>
+																		<input type="number" min="0" max="59"
+																			placeholder="MM" class="form-control"
+																			style="width: 60px;"
+																			ng-model="ctrl.model.data_sfarsit_mm"> -->
+																	</div>
+																</td>
+																<td style="width: 60px;"></td>
+																<td style="width: 40px;"></td>
+															</tr>
+														</tbody>
+													</table>
+												</td>
+											</tr>
+
+											<!-- GRUPURI OR (linie intrerupta intre ele) -->
+											<tr ng-repeat="group in ctrl.filterGroups track by $index"
+												ng-init="gIndex = $index">
+												<td>
+													<table class="table-hover"
+														style="border-left: 2px solid #8fff62;
+                                                                  background: linear-gradient(122deg, #ecffe5 0%, rgba(0,255,51,0) 31%);"
+														ng-style="{'margin-top': ($first ? '10px' : '20px')}">
+														<tbody>
+															<!-- FILTRE AND in același grup (linie verde neintrerupta) -->
+															<tr ng-repeat="f in group track by $index"
+																ng-init="idx = $index">
+																<td>
+																	<select class="form-control"
+																		style="min-width: 200px; margin: 0;"
+																		ng-model="f.column"
+																		ng-options="c.key as c.label for c in ctrl.allowColumns">
+																		<option value="">Selecteaza...</option>
+																	</select>
+																</td>
+
+																<td>
+																	<select class="form-control" style="margin: 0;"
+																		ng-model="f.op"
+																		ng-options="o.code as o.label for o in ctrl.opOptions">
+																	</select>
+																</td>
+
+																<td style="min-width: 240px;"
+																	ng-class="{'has-error': ctrl.opRequiresValue(f.op) && !f.value && ctrl.filtersTouched}">
+																	<input class="form-control"
+																		style="min-width: 200px; margin: 0;"
+																		ng-model="f.value" placeholder="valoare"
+																		ng-disabled="f.op === 'IS_EMPTY' || f.op === 'IS_NOT_EMPTY'"
+																		ng-required="ctrl.opRequiresValue(f.op)">
+																	<div class="input-error-text"
+																		ng-show="ctrl.opRequiresValue(f.op) && !f.value && ctrl.filtersTouched">
+																		Acest camp este obligatoriu
+																	</div>
+																</td>
+
+
+																<!-- PLUS VERDE: AND in același grup -->
+																<td style="position:relative; width:60px;">
+																	<span
+																		style="position: absolute; bottom: -3px; cursor: pointer;"
+																		ng-click="ctrl.addOrFilter(gIndex)"
+																		ng-if="$last">
+																		<span
+																			style="font-size: 30px; color: #8fff62;">+</span>
+																	</span>
+																</td>
+
+																<!-- X: șterge filtru -->
+																<td style="width:40px;">
+																	<span style="font-size: 20px; cursor: pointer;"
+																		ng-click="ctrl.removeFilter(gIndex, idx)">
+																		✕
+																	</span>
+																</td>
+															</tr>
+														</tbody>
+													</table>
+												</td>
+											</tr>
+
+										</tbody>
+									</table>
+								</td>
+
+								<!-- DREAPTA: plus albastru = OR (grup nou) -->
+								<td style="width: 450px; position: relative; vertical-align: bottom;">
+									<span style="position: absolute; bottom: 0; cursor: pointer;"
+										ng-click="ctrl.addAndGroup()">
+										<span style="font-size: 40px; color: #81b1ec;">+</span>
+										<span style="font-size: 14px; padding: 0 5px; line-height: normal;
+                                                     margin-top: 20px; float: right; display: inline-block;">
+											Adauga filtru
+										</span>
+									</span>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+				<!-- END - cautare documente -->
+
+				<tr>
+					<td colspan="6" class="padd-bottom0">
+						<!-- <div class="box-bottom padd-bottom10"> -->
+						<div class="box-bottom padd-bottom10">
+							<!-- IMPORTANT: reset page on new search -->
+							<button type="button" class="btn-def hover-blue"
+								ng-click="ctrl.search(true, true)">Cauta</button>
+
+							<!-- <a type="button" class="btn-def hover-red"
+                               ng-click="ctrl.results=[]; ctrl.selectedUuid=null;">
+                                Anuleaza
+                            </a> -->
+
+							<!-- <button type="button" class="btn-def hover-green" style="float:right" -->
+
+						</div>
+					</td>
+				</tr>
+
+				<!-- Results grid -->
+				<tr>
+					<td colspan="6">
+						<div class="arh-table-wrapper">
+							<table class="table table-sm table-striped table-hover align-middle table-layout-fixed">
+								<thead class="table-dark">
+									<!-- Header row -->
+									<tr>
+										<th style="width:40px;"></th>
+										<th style="width:100px;">SKP</th>
+										<th>Cod Cutie</th>
+										<th>Cod Obiect</th>
+										<th>Tip Produs</th>
+										<th style="width: 100px;">Tip Contract</th>
+										<th>Localitate</th>
+										<th>CRC</th>
+										<th style="width: 15%;">Sumar</th>
+										<th style="width: 15%;">Tip Doc</th>
+										<th style="width: 90px;">Data arhivare</th>
+									</tr>
+
+									<!-- NEW: filter row (like Rapoarte) -->
+									<tr>
+										<th></th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.skp"
+												ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal"
+												ng-change="ctrl.onColumnFilterChange()">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.cod_cutie_obiect"
+												ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal"
+												ng-change="ctrl.onColumnFilterChange()">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.cod_obiect"
+												ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal"
+												ng-change="ctrl.onColumnFilterChange()">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.Tip_Produs"
+												ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal"
+												ng-change="ctrl.onColumnFilterChange()">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.Tip_Contract"
+												ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal"
+												ng-change="ctrl.onColumnFilterChange()">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.Localitate"
+												ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal"
+												ng-change="ctrl.onColumnFilterChange()">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.CRC"
+												ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal"
+												ng-change="ctrl.onColumnFilterChange()">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.sumar"
+												ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal"
+												ng-change="ctrl.onColumnFilterChange()">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.tip_doc_cod_arh"
+												ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal"
+												ng-change="ctrl.onColumnFilterChange()">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.an_creare"
+												ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal"
+												ng-change="ctrl.onColumnFilterChange()">
+										</th>
+									</tr>
+								</thead>
+
+								<tbody>
+									<tr ng-repeat="r in ctrl.results">
+
+										<td class="text-center">
+											<input type="checkbox" class="arh-checkbox" ng-checked="ctrl.isSelected(r)"
+												ng-click="ctrl.toggleSelect(r)">
+										</td>
+
+										<td>{{ r.skp }}</td>
+										<td>{{ r.cod_cutie_obiect }}</td>
+										<td>{{ r.cod_obiect }}</td>
+										<td>{{ r.Tip_Produs }}</td>
+										<td>{{ r.Tip_Contract }}</td>
+										<td>{{ r.Localitate }}</td>
+										<td>{{ r.CRC }}</td>
+										<td truncate-cell text="r.sumar" limit="60"></td>
+										<td truncate-cell text="r.tip_doc_cod_arh" limit="60"></td>
+										<td>{{ r.an_creare }}</td>
+
+									</tr>
+
+									<tr ng-if="!ctrl.results || !ctrl.results.length">
+										<td colspan="10" class="text-center">
+											Nu exista rezultate pentru criteriile selectate.
+										</td>
+									</tr>
+								</tbody>
+
+							</table>
+						</div>
+
+						<!-- Pagination controls -->
+						<div class="pageinare" ng-show="numarPagini > 0">
+
+
+							<div class="page" ng-show="numarPagini > 0 && currentPage > 0"
+								ng-click="setCurrentPage(currentPage-1)">&#x276E;</div>
+
+							<div class="pageinare" ng-show="numarPagini < 5">
+								<div class="page page-set" ng-click="setCurrentPage(0)" data-value="0">1</div>
+								<div class="page" ng-repeat="page in pages track by $index" ng-show="($index > 0)"
+									ng-click="setCurrentPage(page)" data-value="{{page}}">{{page + 1}}</div>
+							</div>
+							<div class="pageinare" ng-show="numarPagini >= 5">
+								<div class="page page-set" ng-click="setCurrentPage(0)" data-value="0">1</div>
+								&nbsp; &nbsp; &nbsp;
+								<div class="page" ng-repeat="page in pages track by $index"
+									ng-click="setCurrentPage(page)" data-value="{{page}}">{{page + 1}}</div>
+								&nbsp; &nbsp; &nbsp;
+								<div class="page" ng-show="numarPagini > 0" ng-click="setCurrentPage(numarPagini - 1)"
+									data-value="{{numarPagini - 1}}">{{numarPagini}}</div>
+							</div>
+							<div class="page" ng-show="numarPagini > 0 && currentPage < numarPagini - 1"
+								ng-click="setCurrentPage(currentPage+1)">&#x276F;</div>
+						</div>
+					</td>
+				</tr>
+
+				<!-- Accordion: Elemente selectate -->
+				<tr>
+					<td colspan="6">
+						<div class="arh-accordion">
+
+							<!-- Header -->
+							<div class="arh-accordion-header"
+								ng-click="ctrl.showSelectedAccordion = !ctrl.showSelectedAccordion">
+								<span class="arh-accordion-icon">
+									<span ng-if="ctrl.showSelectedAccordion">&#9660;</span> <!-- ▼ -->
+									<span ng-if="!ctrl.showSelectedAccordion">&#9656;</span> <!-- ▶ -->
+								</span>
+								<span>Elemente selectate ({{ ctrl.getSelectedUuids().length }})</span>
+							</div>
+
+							<!-- Body -->
+							<div class="arh-accordion-body" ng-show="ctrl.showSelectedAccordion">
+
+								<div ng-if="!ctrl.getSelectedUuids().length" class="text-muted"
+									style="padding: 10px 15px;">
+									Nu exista elemente selectate.
+								</div>
+
+								<div>
+									<table class="table table-sm table-striped table-hover align-middle small-table">
+										<thead>
+											<tr>
+												<th>SKP</th>
+												<th>Cod Cutie</th>
+												<th>Cod Obiect</th>
+												<th>Tip Produs</th>
+												<th>Tip Contract</th>
+												<th>Localitate</th>
+												<th>CRC</th>
+												<th>Sumar (Adresa)</th>
+												<th>Tip Doc</th>
+												<th>Data arhivare</th>
+												<th style="width:130px;">NLC</th>
+												<th style="width:130px;">Nume abonat</th>
+												<th style="width: 70px; text-align:center;">Actiune</th>
+											</tr>
+										</thead>
+										<tbody>
+											<!-- (uuid, row) iteration over selectedDocs -->
+											<tr ng-repeat="(uuid, row) in ctrl.selectedDocs">
+
+												<!-- SKP nvarchar(50) -->
+												<td>
+													<span ng-if="!row._editAlways.skp">{{ row.skp }}</span>
+
+													<input ng-if="row._editAlways.skp" type="text" ng-model="row.skp"
+														class="form-control form-control-sm fw-normal"
+														name="skp_{{uuid}}" maxlength="50">
+													<div class="input-error-text"
+														ng-show="frmRetragere['skp_'+uuid].$touched && frmRetragere['skp_'+uuid].$error.maxlength">
+														Maxim 50 caractere
+													</div>
+												</td>
+
+												<!-- Cod Cutie nvarchar(50) -->
+												<td>
+													<span ng-if="!row._editAlways.cod_cutie_obiect">{{
+														row.cod_cutie_obiect }}</span>
+
+													<input ng-if="row._editAlways.cod_cutie_obiect" type="text"
+														ng-model="row.cod_cutie_obiect"
+														class="form-control form-control-sm fw-normal"
+														name="cod_cutie_obiect_{{uuid}}" maxlength="50">
+													<div class="input-error-text"
+														ng-show="frmRetragere['cod_cutie_obiect_'+uuid].$touched && frmRetragere['cod_cutie_obiect_'+uuid].$error.maxlength">
+														Maxim 50 caractere
+													</div>
+												</td>
+
+												<!-- Cod Obiect nvarchar(50) -->
+												<td>
+													<span ng-if="!row._editAlways.cod_obiect">{{ row.cod_obiect
+														}}</span>
+
+													<input ng-if="row._editAlways.cod_obiect" type="text"
+														ng-model="row.cod_obiect"
+														class="form-control form-control-sm fw-normal"
+														name="cod_obiect_{{uuid}}" maxlength="50">
+													<div class="input-error-text"
+														ng-show="frmRetragere['cod_obiect_'+uuid].$touched && frmRetragere['cod_obiect_'+uuid].$error.maxlength">
+														Maxim 50 caractere
+													</div>
+												</td>
+
+												<!-- Tip Produs nvarchar(255) -->
+												<td>
+													<span ng-if="!row._editAlways.Tip_Produs">{{ row.Tip_Produs
+														}}</span>
+
+													<input ng-if="row._editAlways.Tip_Produs" type="text"
+														ng-model="row.Tip_Produs"
+														class="form-control form-control-sm fw-normal"
+														name="Tip_Produs_{{uuid}}" maxlength="255">
+													<div class="input-error-text"
+														ng-show="frmRetragere['Tip_Produs_'+uuid].$touched && frmRetragere['Tip_Produs_'+uuid].$error.maxlength">
+														Maxim 255 caractere
+													</div>
+												</td>
+
+												<!-- Tip Contract nvarchar(255) -->
+												<td>
+													<span ng-if="!row._editAlways.Tip_Contract">{{ row.Tip_Contract
+														}}</span>
+
+													<input ng-if="row._editAlways.Tip_Contract" type="text"
+														ng-model="row.Tip_Contract"
+														class="form-control form-control-sm fw-normal"
+														name="Tip_Contract_{{uuid}}" maxlength="255">
+													<div class="input-error-text"
+														ng-show="frmRetragere['Tip_Contract_'+uuid].$touched && frmRetragere['Tip_Contract_'+uuid].$error.maxlength">
+														Maxim 255 caractere
+													</div>
+												</td>
+
+												<!-- Localitate nvarchar(20) -->
+												<td>
+													<span ng-if="!row._editAlways.Localitate">{{ row.Localitate
+														}}</span>
+
+													<input ng-if="row._editAlways.Localitate" type="text"
+														ng-model="row.Localitate"
+														class="form-control form-control-sm fw-normal"
+														name="Localitate_{{uuid}}" maxlength="20">
+													<div class="input-error-text"
+														ng-show="frmRetragere['Localitate_'+uuid].$touched && frmRetragere['Localitate_'+uuid].$error.maxlength">
+														Maxim 20 caractere
+													</div>
+												</td>
+
+												<!-- CRC nvarchar(100) -->
+												<td>
+													<span ng-if="!row._editAlways.CRC">{{ row.CRC }}</span>
+
+													<input ng-if="row._editAlways.CRC" type="text" ng-model="row.CRC"
+														class="form-control form-control-sm fw-normal"
+														name="CRC_{{uuid}}" maxlength="100">
+													<div class="input-error-text"
+														ng-show="frmRetragere['CRC_'+uuid].$touched && frmRetragere['CRC_'+uuid].$error.maxlength">
+														Maxim 100 caractere
+													</div>
+												</td>
+
+												<!-- Sumar nvarchar(45) -->
+												<td ng-class="{'has-error': (frmRetragere['sumar_'+uuid].$touched || ctrl.isOverMaxRaw(row,'sumar')) 
+													&& frmRetragere['sumar_'+uuid].$error.maxlength}">
+													<span ng-if="!ctrl.shouldEdit(row,'sumar')">{{ row.sumar }}</span>
+
+													<input ng-if="ctrl.shouldEdit(row,'sumar')" type="text"
+														ng-model="row.sumar"
+														class="form-control form-control-sm fw-normal"
+														name="sumar_{{uuid}}" ng-maxlength="ctrl.maxLen.sumar">
+
+													<div class="input-error-text" ng-show="(frmRetragere['sumar_'+uuid].$touched || ctrl.isOverMaxRaw(row,'sumar'))
+             											&& frmRetragere['sumar_'+uuid].$error.maxlength">
+														Maxim 45 caractere
+													</div>
+												</td>
+
+
+												<!-- Tip Doc nvarchar(max) -->
+												<td>
+													<span ng-if="!row._editAlways.tip_doc_cod_arh">{{
+														row.tip_doc_cod_arh }}</span>
+
+													<input ng-if="row._editAlways.tip_doc_cod_arh" type="text"
+														ng-model="row.tip_doc_cod_arh"
+														class="form-control form-control-sm fw-normal" maxlength="50"
+														name="tip_doc_cod_arh_{{uuid}}">
+												</td>
+
+												<!-- Data arhivare / an_creare nvarchar(32) -->
+												<td>
+													<span ng-if="!row._editAlways.an_creare">{{ row.an_creare }}</span>
+
+													<input ng-if="row._editAlways.an_creare" type="text"
+														ng-model="row.an_creare"
+														class="form-control form-control-sm fw-normal"
+														name="an_creare_{{uuid}}" maxlength="32">
+													<div class="input-error-text"
+														ng-show="frmRetragere['an_creare_'+uuid].$touched && frmRetragere['an_creare_'+uuid].$error.maxlength">
+														Maxim 32 caractere
+													</div>
+												</td>
+
+												<!-- NLC nvarchar(50) -->
+												<td>
+													<span ng-if="!row._editAlways.cod_nlc">{{ row.cod_nlc }}</span>
+
+													<input ng-if="row._editAlways.cod_nlc" type="text"
+														ng-model="row.cod_nlc"
+														class="form-control form-control-sm fw-normal"
+														name="cod_nlc_{{uuid}}" maxlength="50">
+													<div class="input-error-text"
+														ng-show="frmRetragere['cod_nlc_'+uuid].$touched && frmRetragere['cod_nlc_'+uuid].$error.maxlength">
+														Maxim 50 caractere
+													</div>
+												</td>
+
+												<!-- Nume abonat varchar(100) -->
+												<td>
+													<span ng-if="!row._editAlways.nume_abonat">{{ row.nume_abonat
+														}}</span>
+
+													<input ng-if="row._editAlways.nume_abonat" type="text"
+														ng-model="row.nume_abonat"
+														class="form-control form-control-sm fw-normal"
+														name="nume_abonat_{{uuid}}" maxlength="100">
+													<div class="input-error-text"
+														ng-show="frmRetragere['nume_abonat_'+uuid].$touched && frmRetragere['nume_abonat_'+uuid].$error.maxlength">
+														Maxim 100 caractere
+													</div>
+												</td>
+
+												<td class="text-center">
+													<button type="button" class="btn-def hover-red"
+														ng-click="ctrl.removeSelected(uuid, $event)">Sterge</button>
+												</td>
+
+
+											</tr>
+
+											<tr>
+												<td colspan="13">
+													<button type="button" class="btn-def hover-green"
+														ng-click="ctrl.addNew()">Adauga inregistrare noua</button>
+												</td>
+
+											</tr>
+										</tbody>
+									</table>
+								</div>
+
+							</div>
+						</div>
+					</td>
+				</tr>
+
+				<tr>
+					<td colspan="6" class="padd-bottom0">
+						<div class="box-bottom padd-bottom10">
+							<button type="button" class="btn-def hover-red" style="margin:unset !important"
+								ng-click="ctrl.anuleazaSolicitare(false)"
+								ng-disabled="!ctrl.selectedDocsLength || !ctrl.selectedDocs"
+								disabled="disabled">Anuleaza</button>
+							<button type="button" class="btn-def hover-green" style="float:right"
+								ng-click="ctrl.addSolicitare()"
+								ng-disabled="!ctrl.selectedDocsLength || !ctrl.selectedDocs || !ctrl.canSubmit() || frmRetragere.$invalid"
+								disabled="disabled">Trimite
+								solicitarea</button>
+						</div>
+					</td>
+				</tr>
+
+			</table>
+		</form>
+	</div>
+</div>

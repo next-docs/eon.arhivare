@@ -1,0 +1,247 @@
+<!-- <div class="container" ng-controller="RetragereArhiva">
+
+    <div class="box-border">
+        <form name="retragereArhiva" class="hide-css-required" ng-submit="submitForm()" novalidate>
+            <table class="full-width mt6" id="tableForm">
+                
+                RetragereArhiva
+
+            </table>
+        </form>
+    </div>
+</div> -->
+
+<div class="container" ng-controller="ComandaRidicareArhiva as ctrl">
+
+    <div class="box-border">
+        <form name="frmRidicareArhiva" class="hide-css-required" ng-submit="submitForm()" novalidate>
+            <table class="full-width mt6" id="tableForm" style="table-layout:fixed;">
+				<tr>
+					<td colspan="6" class="cBlue1 text-left"><span>Formular ridicare arhiva (client)</span></td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Numar inregistrare</td>
+					<td class="text-left"><input class="form-control" ng-model="ctrl.comanda.numar_inregistrare" readonly></td>
+					<td class="text-left">Companie</td>
+					<td class="text-left"><input class="form-control" ng-model="ctrl.comanda.companie" readonly style="width:173px"></td>
+					<td class="text-left">Data/ora inregistrare</td>
+					<td class="text-left"><input class="form-control" ng-model="ctrl.comanda.data_inregistrare" readonly></td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Status</td>
+					<td class="text-left"><input class="form-control" ng-model="ctrl.comanda.status" readonly></td>
+				</tr>
+				<tr></tr>
+				<tr></tr>
+				<tr></tr>
+				<tr></tr>
+				<tr></tr>
+				<tr>
+					<td class="text-left">Tip arhiva</td>
+					<td class="text-left" ng-class="{'has-error': ctrl.submitted && !ctrl.comanda.tip_arhiva}">
+						<select class="form-control" ng-model="ctrl.comanda.tip_arhiva"
+							ng-options="m.nume as m.nume for m  in ctrl.optiuniTipArhiva" required>
+							<option value="">Selecteaza...</option>
+						</select>
+						<div class="input-error-text" ng-show="ctrl.submitted && !ctrl.comanda.tip_arhiva">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+					<td class="text-left" ng-if="ctrl.comanda.tip_arhiva == 'Cutie'">Nr. cutii</td>
+					<td class="text-left" ng-if="ctrl.comanda.tip_arhiva == 'Cutie'" ng-class="{'has-error': ctrl.submitted && !ctrl.comanda.numar_buc}">
+						<input class="form-control" ng-model="ctrl.comanda.numar_buc" onkeypress="return event.charCode >= 48 && event.charCode <= 57" ng-change="ctrl.formateazaNumarBucati()" />
+						<div class="input-error-text" ng-show="ctrl.submitted && !ctrl.comanda.numar_buc">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Departament</td>
+					<td class="text-left">
+					<ui-select ng-model="ctrl.departamentSelectat" ng-change="ctrl.comanda.departament = ctrl.departamentSelectat.nume; ctrl.comanda.departament_id = ctrl.departamentSelectat.id" 
+							ng-class="{'has-error': ctrl.submitted && !ctrl.comanda.departament}">
+						<ui-select-match placeholder="Selecteaza..." ng-attr-title="{{$select.selected.nume}}">
+							{{$select.selected.nume}}
+						</ui-select-match>
+						<ui-select-choices repeat="opt in ctrl.optiuniDepartament | filter: $select.search">
+							<div ng-bind="opt.nume"></div>
+						</ui-select-choices>
+					</ui-select>
+						
+						<div class="input-error-text" ng-show="ctrl.submitted && !ctrl.comanda.departament">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+					<td class="text-left">Punct colectare CRC</td>
+					<td class="text-left">
+						<ui-select ng-model="ctrl.crcSelectat" 
+								ng-change="ctrl.comanda.crc = ctrl.crcSelectat.nume; ctrl.comanda.crc_id = ctrl.crcSelectat.id; ctrl.comanda.judet = ctrl.crcSelectat.judet; 
+								ctrl.comanda.localitate = ctrl.crcSelectat.localitate; ctrl.comanda.adresa = ctrl.crcSelectat.adresa;" 
+								ng-class="{'has-error': ctrl.submitted && !ctrl.comanda.crc}">
+						  <ui-select-match placeholder="Selecteaza..." ng-attr-title={{$select.selected.nume}}>{{$select.selected.nume}}</ui-select-match>
+						   <ui-select-choices repeat="opt in ctrl.optiuniPunctColectareCRC | filter: $select.search">
+							<div ng-bind="opt.nume"></div>
+						  </ui-select-choices>
+						</ui-select>
+						<div class="input-error-text" ng-show="ctrl.submitted && !ctrl.comanda.crc">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+					<td class="text-left">Punct Colectare alte Documente</td>
+					<td class="text-left">
+						<ui-select ng-model="ctrl.punctColectareAlteDocSelectat"
+								   ng-change="
+									 ctrl.comanda.punct_colectare_alte_doc = ctrl.punctColectareAlteDocSelectat.id === null ? null : ctrl.punctColectareAlteDocSelectat.nume;
+									 ctrl.comanda.punct_colectare_alte_doc_id = ctrl.punctColectareAlteDocSelectat.id">
+						  
+						  <ui-select-match placeholder="Selecteaza..." ng-attr-title="{{$select.selected.nume}}">
+							{{$select.selected.nume}}
+						  </ui-select-match>
+						  
+						  <ui-select-choices repeat="opt in ctrl.optiuniPunctColectareAlteDocumente | filter: $select.search">
+							<div ng-bind="opt.nume || '— niciuna —'"></div>
+						  </ui-select-choices>
+						</ui-select>
+
+						
+					</td>
+				</tr>
+				
+				<tr>
+					<td class="text-left">Persoana</td>
+					<td class="text-left" ng-class="{'has-error': ctrl.submitted && !ctrl.comanda.persoana}">
+						<input type="text" class="form-control" ng-model="ctrl.comanda.persoana" />
+						<div class="input-error-text" ng-show="ctrl.submitted && !ctrl.comanda.persoana">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+					<td class="text-left">Telefon</td>
+					<td class="text-left" ng-class="{'has-error': ctrl.submitted && !ctrl.comanda.telefon}">
+						<input type="text" class="form-control" ng-model="ctrl.comanda.telefon" />
+						<div class="input-error-text" ng-show="ctrl.submitted && !ctrl.comanda.telefon">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="6" class="text-left">Descriere</td>
+				</tr>
+				<tr>
+					<td colspan="6" class="text-left">
+						<textarea class="form-control" ng-model="ctrl.comanda.descriere">
+						</textarea>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="6" class="padd-bottom0" ng-if="ctrl.indexComandaEdit == -1">
+						<div class="box-bottom padd-bottom10">
+							<button type="button" class="btn-def hover-blue" ng-click="ctrl.adaugaComanda()">Adauga</button>
+						</div>
+					</td>
+					<td colspan="6" class="padd-bottom0" ng-if="ctrl.indexComandaEdit >= 0">
+						<div class="box-bottom padd-bottom10">
+							<a type="button" class="btn-def hover-red"
+								ng-click="ctrl.anuleazaEditareComanda()">Renunta</a>
+							<button type="button" class="btn-def hover-green"
+								ng-click="ctrl.salveazaEditareComanda()">Salveaza</button>
+						</div>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="6">
+						<div class="arh-table-wrapper">
+							<table class="table table-sm table-striped table-hover align-middle table-layout-fixed">
+								<thead class="table-dark">
+									<tr>
+										<th style="width:43px">Nr. crt.</th>
+										<th ng-style="ctrl.comenzi && ctrl.comenzi.length > 0 ? {'width':'100px'} : {}">Tip arhiva</th>
+										<th ng-style="ctrl.comenzi && ctrl.comenzi.length > 0 ? {'width':'100px'} : {}">Numar cutii</th>
+										<th>Departament</th>
+										<th>Punct colectare CRC</th>
+										<th>Punct Colectare alte documente</th>
+										<th style="width:25%">Descriere</th>
+										<th>Persoana</th>
+										<th>Telefon</th>
+										<th ng-if="ctrl.comenzi && ctrl.comenzi.length > 0" ng-style="ctrl.comenzi && ctrl.comenzi.length > 0 ? {'width':'180px'} : {}"></th>
+									</tr>
+								</thead>
+
+								<tbody>
+									<tr ng-repeat="comanda in ctrl.getPagedComenzi() track by $index">
+
+										<td>{{ currentPage * pageSize + $index + 1}}</td>
+										<td>{{ comanda.tip_arhiva }}</td>
+										<td>{{ comanda.numar_buc }}</td>
+										<td>{{ comanda.departament }}</td>
+										<td>{{ comanda.crc }}</td>
+										<td>{{ comanda.punct_colectare_alte_doc }}</td>
+										<td truncate-cell text="comanda.descriere" limit="60"></td>
+										<td>{{ comanda.persoana }}</td>
+										<td>{{ comanda.telefon }}</td>
+										<td class="text-center" ng-if="ctrl.comenzi && ctrl.comenzi.length > 0">
+											<button type="button" class="btn-def hover-red"
+												ng-click="ctrl.stergeComanda(comanda)" ng-disabled="ctrl.indexComandaEdit != -1">Sterge</button>
+											<button type="button" class="btn-def hover-green" style="float:right"
+												ng-click="ctrl.editeazaComanda(comanda)" ng-disabled="ctrl.indexComandaEdit != -1">Editeaza</button>
+										</td>
+
+									</tr>
+
+									<tr ng-if="!ctrl.comenzi || !ctrl.comenzi.length">
+										<td colspan="9" class="text-center">
+											Nu exista inregistrari.
+										</td>
+									</tr>
+								</tbody>
+
+							</table>
+						</div>
+
+						<!-- Pagination controls -->
+                        <div class="pageinare" ng-show="numarPagini > 0">
+
+
+							  <div class="page" ng-show="numarPagini > 0 && currentPage > 0"
+								ng-click="setCurrentPage(currentPage-1)">&#x276E;</div>
+
+							  <div class="pageinare" ng-show="numarPagini < 5">
+								<div class="page page-set" ng-click="setCurrentPage(0)" data-value="0">1</div>
+								<div class="page" ng-repeat="page in pages track by $index" ng-show="($index > 0)"
+								  ng-click="setCurrentPage(page)" data-value="{{page}}">{{page + 1}}</div>
+							  </div>
+							  <div class="pageinare" ng-show="numarPagini >= 5">
+								<div class="page page-set" ng-click="setCurrentPage(0)" data-value="0">1</div>
+								&nbsp; &nbsp; &nbsp;
+								<div class="page" ng-repeat="page in pages track by $index" ng-click="setCurrentPage(page)"
+								  data-value="{{page}}">{{page + 1}}</div>
+								&nbsp; &nbsp; &nbsp;
+								<div class="page" ng-show="numarPagini > 0" ng-click="setCurrentPage(numarPagini - 1)"
+								  data-value="{{numarPagini - 1}}">{{numarPagini}}</div>
+							  </div>
+							  <div class="page" ng-show="numarPagini > 0 && currentPage < numarPagini - 1"
+								ng-click="setCurrentPage(currentPage+1)">&#x276F;</div>
+                        </div>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="6" class="padd-bottom0">
+						<div class="box-bottom padd-bottom10">
+							<button type="button" class="btn-def hover-red" style="margin:unset !important"
+								ng-click="ctrl.anuleazaComanda()" ng-disabled="!ctrl.comenzi || !ctrl.comenzi.length">Anuleaza</button>
+							<button type="button" class="btn-def hover-green" style="float:right"
+								ng-click="ctrl.inregistreazaComenzi()" ng-disabled="!ctrl.comenzi || !ctrl.comenzi.length">Trimite comanda</button>
+						</div>
+					</td>
+				</tr>
+
+			</table>
+		</form>
+	</div>
+</div>

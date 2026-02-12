@@ -1,0 +1,69 @@
+<div ng-controller="ArhEonCtrl">
+
+  <div class="sticky">
+
+    <div ng-click="toggleSplitView()" class="split-ribbon"
+      ng-style="{ 'background-color': !isSplitView ? '#28a745' : '#dc3545' }"
+      ng-if="!isSimpleUser && (!defaultRepo || defaultRepo.indexOf('repo_') !== 0)">
+      <div class="split-ribbon-content">
+        <img style="vertical-align:middle;" src="resources/images/split-screen-icon.svg" alt="Split">
+        <div class="split-label" style="vertical-align:middle; display:inline; padding:10px;">
+          {{ isSplitView ? 'Exit Split' : 'Split' }}
+        </div>
+      </div>
+    </div>
+
+    <div class="container main-menu">
+      <table ng-hide="hideMenu">
+        <tr>
+          <td>
+            <div class="main-menu-top fontMenu intrariColorStyle boldMenu"><span>Rapoarte</span></div>
+            <div class="main-menu-bottom">
+              <a href="" ng-click="loadView('rapoarte')" ng-disabled="isSplitView"
+                ng-class="{'active': currentView === 'rapoarte', 'disabled': isSplitView}"
+                class="fontMenu intrariBTNColorStyle boldMenu">
+                <br />Rapoarte
+              </a>
+            </div>
+          </td>
+          <td>
+            <div class="main-menu-top fontMenu intrariColorStyle boldMenu"><span>Ridicare</span></div>
+            <div class="main-menu-bottom">
+              <a href="" ng-click="loadView('comandaRidicareArhiva')" ng-class="{'active': currentView === 'comandaRidicareArhiva', 'disabled': isSimpleUser}"
+                class="fontMenu intrariBTNColorStyle boldMenu">
+                <br />Comanda Ridicare Arhiva
+              </a>
+            </div>
+          </td>
+          <td>
+            <div class="main-menu-top fontMenu intrariColorStyle boldMenu"><span>Retragere Arhiva</span></div>
+            <div class="main-menu-bottom">
+
+              <a href="" ng-click="loadView('retragereArhivaRecurenta')" ng-class="{'active': currentView === 'retragereArhivaRecurenta', 'disabled': isSimpleUser}"
+                class="fontMenu intrariBTNColorStyle boldMenu">
+                <br />Recurenta
+              </a>
+
+              <a href="" ng-click="loadView('retragereIstoricArhiva')" ng-class="{'active': currentView === 'retragereIstoricArhiva', 'disabled': isSimpleUser}"
+                class="fontMenu intrariBTNColorStyle boldMenu">
+                <br />Istoric
+              </a>
+
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="menu-spacer"></div>
+
+  <div class="content" ng-class="{'split-container': isSplitView}">
+    <div class="split-left" ng-if="isSplitView">
+      <div ng-include="'app/controllers/rapoarte/rapoarte.html'"></div>
+    </div>
+    <div ng-class="{'split-right': isSplitView}">
+      <div ng-include="getTemplateUrl()" style="overflow:auto"></div>
+    </div>
+  </div>
+</div>

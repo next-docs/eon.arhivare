@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta  name = "viewport" content = "width=device-width, initial-scale=1, user-scalable=no" >
+        <link rel="icon" href="../../../apps/resources/images/elo-favicon.ico" />
+        <link rel="shortcut icon" href="../../../apps/resources/images/elo-favicon.ico" />
+        <title>Arhiva</title>
+        <style type="text/css">
+            #elo-loading a { color:#225588; }
+            #elo-loading-mask { background-color: #F2F2F2; height:100%; position:fixed; left:0; top:0; width:100%; z-index:20000; }
+            #elo-loading { height:auto; position:fixed; left:40%; top:40%; padding:2px; z-index:20001; width: 20%; text-align: center;}
+            #elo-loading-title { display: block; color: #225588; font-size: 20px; font-weight: bold; font-family: Tahoma, Helvetica, Arial, sans-serif; margin-bottom: 30px; }
+            #elo-loading-msg { display: block; font-size: 12px; font-weight: normal; color: #585858; font-family: Tahoma, Helvetica, Arial, sans-serif; margin-top: 90px; }
+        </style>
+    </head>
+    <body>
+        <div id="elo-toasts" class="elo-toasts"></div>
+        <div id="elo-loading-mask"></div>
+        <div id="elo-loading">
+            <span id="elo-loading-title">Arhiva</span>
+            <img id="elo-loading-img" src="data:image/gif;base64,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"/>
+            <span id="elo-loading-msg">Loading data...</span>
+        </div>
+<script type="text/javascript">var elo = elo || {};elo.data = elo.data || {};elo.data.server = {language: "en",appId: "ArhEon",appNamespace: "custom.nextdocs",appVersion: "13",appStatus: 103,ct: "\x5a\x50\x43\x45",appBuild: 21,appUseEloSession: true,appUseDefaultModules: true,appBlockXFrameOptions: false};elo.appInfo = {application: { name: 'ELOwf App' },page: { name: elo.data.server.appNamespace + '.' + elo.data.server.appId }};</script>
+<script type="text/javascript" src="../../../apps/pages/serverData.jsp?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/pages/appConfig.jsp?id=ArhEon&namespace=custom.nextdocs&_version=23.06.000"></script>
+<div ng-controller="ArhEonCtrl">
+
+  <div class="sticky">
+
+    <div ng-click="toggleSplitView()" class="split-ribbon"
+      ng-style="{ 'background-color': !isSplitView ? '#28a745' : '#dc3545' }"
+      ng-if="!isSimpleUser && (!defaultRepo || defaultRepo.indexOf('repo_') !== 0)">
+      <div class="split-ribbon-content">
+        <img style="vertical-align:middle;" src="resources/images/split-screen-icon.svg" alt="Split">
+        <div class="split-label" style="vertical-align:middle; display:inline; padding:10px;">
+          {{ isSplitView ? 'Exit Split' : 'Split' }}
+        </div>
+      </div>
+    </div>
+
+    <div class="container main-menu">
+      <table ng-hide="hideMenu">
+        <tr>
+          <td>
+            <div class="main-menu-top fontMenu intrariColorStyle boldMenu"><span>Rapoarte</span></div>
+            <div class="main-menu-bottom">
+              <a href="" ng-click="loadView('rapoarte')" ng-disabled="isSplitView"
+                ng-class="{'active': currentView === 'rapoarte', 'disabled': isSplitView}"
+                class="fontMenu intrariBTNColorStyle boldMenu">
+                <br />Rapoarte
+              </a>
+            </div>
+          </td>
+          <td>
+            <div class="main-menu-top fontMenu intrariColorStyle boldMenu"><span>Ridicare</span></div>
+            <div class="main-menu-bottom">
+              <a href="" ng-click="loadView('comandaRidicareArhiva')" ng-class="{'active': currentView === 'comandaRidicareArhiva', 'disabled': isSimpleUser}"
+                class="fontMenu intrariBTNColorStyle boldMenu">
+                <br />Comanda Ridicare Arhiva
+              </a>
+            </div>
+          </td>
+          <td>
+            <div class="main-menu-top fontMenu intrariColorStyle boldMenu"><span>Retragere Arhiva</span></div>
+            <div class="main-menu-bottom">
+
+              <a href="" ng-click="loadView('retragereArhivaRecurenta')" ng-class="{'active': currentView === 'retragereArhivaRecurenta', 'disabled': isSimpleUser}"
+                class="fontMenu intrariBTNColorStyle boldMenu">
+                <br />Recurenta
+              </a>
+
+              <a href="" ng-click="loadView('retragereIstoricArhiva')" ng-class="{'active': currentView === 'retragereIstoricArhiva', 'disabled': isSimpleUser}"
+                class="fontMenu intrariBTNColorStyle boldMenu">
+                <br />Istoric
+              </a>
+
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="menu-spacer"></div>
+
+  <div class="content" ng-class="{'split-container': isSplitView}">
+    <div class="split-left" ng-if="isSplitView">
+      <div ng-include="'app/controllers/rapoarte/rapoarte.html'"></div>
+    </div>
+    <div ng-class="{'split-right': isSplitView}">
+      <div ng-include="getTemplateUrl()" style="overflow:auto"></div>
+    </div>
+  </div>
+</div><script type="text/javascript" src="./build/js_locales/ArhEon_en.js?_build=21&_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/data/parameters.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/data/dpi.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/third/es6-promise.auto.min.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/elo.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/Console.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/Text.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/Ajax.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/Utils.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/ScriptUtils.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/SortUtils.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/SparkMD5.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/Dom.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/StringBuilder.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/Cookies.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/Tracking.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/WebConnect.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/communication/MessageListener.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/communication/PostMessageHandler.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/communication/IFrameWrapper.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/api.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/helpers/Text.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/helpers/StringBuilder.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/helpers/SortUtils.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/communication/Parent.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/communication/Child.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/communication/DefaultMessageHandler.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/Configuration.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/helpers/Parameters.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/webapps/Toast.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/elo/webapps/WebApp.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/helpers/Configuration.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/helpers/Parameters.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/webapps/WebApp.js?_version=23.06.000"></script>
+<script type="text/javascript" src="../../../apps/js/api/registry/DataCache.js?_version=23.06.000"></script>
+<script type="text/javascript">if (elo && elo.helpers && elo.helpers.Console && elo.helpers.Console.logLevel) { elo.helpers.Console.logLevel = elo.helpers.Console.LOGLEVEL_DEBUG;}</script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["elo.third.momentjs.01"] = JSON.parse("{\"id\":\"elo.third.momentjs.01\",\"status\":1003,\"build\":2,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"moment-with-locales.min.js\",\"EloInitialize.js\"],\"jsDebugLibs\":[],\"cssLibs\":[],\"modules\":[],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["elo.third.momentjs.01"];</script><script type="text/javascript" src="./modules/elo.third.momentjs.01/moment-with-locales.min.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.third.momentjs.01/EloInitialize.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["elo.module.session.light.01"] = JSON.parse("{\"id\":\"elo.module.session.light.01\",\"status\":1003,\"build\":2,\"minimize\":true,\"noArchiving\":false,\"jsLibs\":[\"js\/elo\/session\/Ping.js\",\"js\/elo\/session\/SessionLight.js\",\"js\/api\/rest\/RestUtils.js\"],\"jsDebugLibs\":[],\"cssLibs\":[],\"modules\":[\"elo.third.momentjs.01\"],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["elo.module.session.light.01"];</script><script type="text/javascript" src="./modules/elo.module.session.light.01/js/elo/session/Ping.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.light.01/js/elo/session/SessionLight.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.light.01/js/api/rest/RestUtils.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["elo.module.session.01"] = JSON.parse("{\"id\":\"elo.module.session.01\",\"status\":1003,\"build\":2,\"minimize\":true,\"noArchiving\":false,\"jsLibs\":[\"libs\/EloixClient.js\",\"js\/elo\/session\/Constants.js\",\"js\/elo\/session\/Session.js\",\"js\/api\/session\/Session.js\",\"js\/api\/ix\/EloUtils.js\",\"js\/api\/ix\/DateUtils.js\",\"js\/api\/ix\/ListUtils.js\",\"js\/api\/ix\/SordUtils.js\",\"js\/api\/ix\/TaskUtils.js\",\"js\/api\/ix\/UserUtils.js\",\"js\/api\/ix\/AnyUtils.js\",\"js\/api\/ix\/ConfigUtils.js\",\"js\/api\/ix\/FeedUtils.js\",\"js\/elo\/search\/field\/Field.js\",\"js\/elo\/search\/field\/Date.js\",\"js\/elo\/search\/field\/Mask.js\",\"js\/elo\/search\/field\/Type.js\",\"js\/elo\/search\/field\/Owner.js\",\"js\/elo\/search\/field\/VOwner.js\",\"js\/elo\/search\/field\/XDate.js\",\"js\/elo\/search\/field\/IDate.js\",\"js\/elo\/search\/field\/Index.js\",\"js\/elo\/search\/field\/IndexDate.js\",\"js\/elo\/search\/StateMachine.js\",\"js\/api\/search\/StateMachine.js\",\"js\/elo\/esearch\/field\/Field.js\",\"js\/elo\/esearch\/field\/Date.js\",\"js\/elo\/esearch\/field\/Mask.js\",\"js\/elo\/esearch\/field\/Type.js\",\"js\/elo\/esearch\/field\/Owner.js\",\"js\/elo\/esearch\/field\/VOwner.js\",\"js\/elo\/esearch\/field\/XDate.js\",\"js\/elo\/esearch\/field\/IDate.js\",\"js\/elo\/esearch\/field\/Index.js\",\"js\/elo\/esearch\/field\/Number.js\",\"js\/elo\/esearch\/field\/IndexDate.js\",\"js\/elo\/esearch\/field\/IndexNumber.js\",\"js\/elo\/esearch\/field\/AllIndex.js\",\"js\/elo\/esearch\/field\/DocSize.js\",\"js\/elo\/esearch\/field\/FeedText.js\",\"js\/elo\/esearch\/StateMachine.js\",\"js\/api\/esearch\/StateMachine.js\",\"js\/api\/controller\/ArchiveTree.js\"],\"jsDebugLibs\":[],\"cssLibs\":[],\"modules\":[\"elo.module.session.light.01\"],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["elo.module.session.01"];</script><script type="text/javascript" src="./modules/elo.module.session.01/libs/EloixClient.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/session/Constants.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/session/Session.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/session/Session.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/ix/EloUtils.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/ix/DateUtils.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/ix/ListUtils.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/ix/SordUtils.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/ix/TaskUtils.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/ix/UserUtils.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/ix/AnyUtils.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/ix/ConfigUtils.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/ix/FeedUtils.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/field/Field.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/field/Date.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/field/Mask.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/field/Type.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/field/Owner.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/field/VOwner.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/field/XDate.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/field/IDate.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/field/Index.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/field/IndexDate.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/search/StateMachine.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/search/StateMachine.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/Field.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/Date.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/Mask.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/Type.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/Owner.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/VOwner.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/XDate.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/IDate.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/Index.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/Number.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/IndexDate.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/IndexNumber.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/AllIndex.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/DocSize.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/field/FeedText.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/elo/esearch/StateMachine.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/esearch/StateMachine.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.session.01/js/api/controller/ArchiveTree.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["elo.third.bootstrap.02"] = JSON.parse("{\"id\":\"elo.third.bootstrap.02\",\"status\":1003,\"build\":1,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[],\"jsDebugLibs\":[],\"cssLibs\":[\"css\/bootstrap.min.css\"],\"modules\":[],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["elo.third.bootstrap.02"];</script><script type="text/javascript">elo.namespace("elo.modules");elo.modules["elo.third.angularjs.03"] = JSON.parse("{\"id\":\"elo.third.angularjs.03\",\"status\":1003,\"build\":1,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"angular.min.js\",\"i18n\/angular-locale_{lang-bcp-lc}.js\",\"angular-animate.min.js\",\"angular-sanitize.min.js\"],\"jsDebugLibs\":[\"angular.js\",\"i18n\/angular-locale_{lang-bcp-lc}.js\",\"angular-animate.js\",\"angular-sanitize.js\"],\"cssLibs\":[],\"modules\":[],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["elo.third.angularjs.03"];</script><script type="text/javascript" src="./modules/elo.third.angularjs.03/angular.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.third.angularjs.03/i18n/angular-locale_en.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.third.angularjs.03/angular-animate.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.third.angularjs.03/angular-sanitize.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["elo.third.angularjs.ui.03"] = JSON.parse("{\"id\":\"elo.third.angularjs.ui.03\",\"status\":1003,\"build\":1,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"angular-drag-and-drop-lists\/angular-drag-and-drop-lists.FIX.js\",\"angular-ui\/ui-bootstrap-tpls-1.3.1.min.js\"],\"jsDebugLibs\":[\"angular-drag-and-drop-lists\/angular-drag-and-drop-lists.FIX.js\",\"angular-ui\/ui-bootstrap-tpls-1.3.1.js\"],\"cssLibs\":[],\"modules\":[\"elo.third.bootstrap.02\",\"elo.third.angularjs.03\"],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["elo.third.angularjs.ui.03"];</script><script type="text/javascript" src="./modules/elo.third.angularjs.ui.03/angular-drag-and-drop-lists/angular-drag-and-drop-lists.FIX.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.third.angularjs.ui.03/angular-ui/ui-bootstrap-tpls-1.3.1.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["elo.module.icons"] = JSON.parse("{\"id\":\"elo.module.icons\",\"status\":1003,\"build\":2,\"minimize\":true,\"noArchiving\":false,\"jsLibs\":[\"js\/elo\/module\/LevelIcons.js\"],\"jsDebugLibs\":[],\"cssLibs\":[],\"modules\":[],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["elo.module.icons"];</script><script type="text/javascript" src="./modules/elo.module.icons/js/elo/module/LevelIcons.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["elo.module.components.03"] = JSON.parse("{\"id\":\"elo.module.components.03\",\"defaultLanguage\":\"de\",\"status\":1003,\"build\":1,\"minimize\":true,\"noArchiving\":false,\"jsLibs\":[\"Module.js\",\"providers\/ComponentsConfig.js\",\"factories\/InputUtilsFactory.js\",\"factories\/CommunicationUtilsFactory.js\",\"factories\/EloFunctionFactory.js\",\"services\/ShowWebViewService.js\",\"services\/UploadService.js\",\"services\/ModalDialogService.js\",\"services\/DynamicWidthService.js\",\"controllers\/modal\/Modal.js\",\"controllers\/modal-docversion-form\/ModalDocversionForm.js\",\"controllers\/modal-external-link-form\/ModalExternalLinkForm.js\",\"controllers\/modal-start-workflow\/ModalStartWorkflow.js\",\"controllers\/modal-confirm-workflow\/ModalConfirmWorkflow.js\",\"controllers\/modal-delegate-workflow\/ModalDelegateWorkflow.js\",\"controllers\/modal-command-link\/CommandLink.js\",\"controllers\/modal-progress\/ModalProgress.js\",\"controllers\/modal-tree-view\/ModalTreeView.js\",\"controllers\/modal-change-password\/ModalChangePassword.js\",\"controllers\/modal-about-program\/ModalAboutProgram.js\",\"filters\/GroupName.js\",\"filters\/IsoToDate.js\",\"filters\/IsoToDisplayDate.js\",\"filters\/LevelIcon.js\",\"filters\/Locales.js\",\"filters\/Prio.js\",\"directives\/template\/Template.js\",\"directives\/mask\/Mask.js\",\"directives\/logout\/Logout.js\",\"directives\/profile-image\/ProfileImage.js\",\"directives\/focused\/Focused.js\",\"directives\/enter\/Enter.js\",\"directives\/file\/File.js\",\"directives\/file-drop\/FileDrop.js\",\"directives\/document-view\/DocumentView.js\",\"directives\/docversion-form\/DocversionForm.js\",\"directives\/external-link-form\/ExternalLinkForm.js\",\"directives\/listitem\/ListItem.js\",\"directives\/iframe\/Iframe.js\",\"directives\/include\/Include.js\",\"directives\/user-selection\/UserSelection.js\",\"directives\/input\/Input.js\",\"directives\/toolbar\/Toolbar.js\",\"directives\/task-footer\/TaskFooter.js\",\"directives\/tree-up-button\/TreeUpButton.js\",\"directives\/tree-view\/TreeView.js\"],\"jsDebugLibs\":[],\"cssLibs\":[\"elo.module.components.css\"],\"modules\":[\"elo.third.angularjs.ui.03\",\"elo.module.session.01\",\"elo.module.icons\"],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["elo.module.components.03"];</script><script type="text/javascript" src="./modules/elo.module.components.03/build/js_locales/eloModuleComponents03_en.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/Module.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/providers/ComponentsConfig.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/factories/InputUtilsFactory.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/factories/CommunicationUtilsFactory.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/factories/EloFunctionFactory.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/services/ShowWebViewService.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/services/UploadService.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/services/ModalDialogService.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/services/DynamicWidthService.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal/Modal.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal-docversion-form/ModalDocversionForm.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal-external-link-form/ModalExternalLinkForm.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal-start-workflow/ModalStartWorkflow.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal-confirm-workflow/ModalConfirmWorkflow.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal-delegate-workflow/ModalDelegateWorkflow.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal-command-link/CommandLink.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal-progress/ModalProgress.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal-tree-view/ModalTreeView.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal-change-password/ModalChangePassword.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/controllers/modal-about-program/ModalAboutProgram.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/filters/GroupName.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/filters/IsoToDate.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/filters/IsoToDisplayDate.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/filters/LevelIcon.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/filters/Locales.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/filters/Prio.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/template/Template.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/mask/Mask.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/logout/Logout.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/profile-image/ProfileImage.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/focused/Focused.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/enter/Enter.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/file/File.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/file-drop/FileDrop.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/document-view/DocumentView.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/docversion-form/DocversionForm.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/external-link-form/ExternalLinkForm.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/listitem/ListItem.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/iframe/Iframe.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/include/Include.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/user-selection/UserSelection.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/input/Input.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/toolbar/Toolbar.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/task-footer/TaskFooter.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/tree-up-button/TreeUpButton.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.03/directives/tree-view/TreeView.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["elo.third.angularjs.ui-grid.03"] = JSON.parse("{\"id\":\"elo.third.angularjs.ui-grid.03\",\"status\":1003,\"build\":1,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"ui-grid.min.js\"],\"jsDebugLibs\":[\"ui-grid.js\"],\"cssLibs\":[\"ui-grid.min.css\"],\"modules\":[\"elo.third.angularjs.03\"],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["elo.third.angularjs.ui-grid.03"];</script><script type="text/javascript" src="./modules/elo.third.angularjs.ui-grid.03/ui-grid.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["elo.module.components.lists.03"] = JSON.parse("{\"id\":\"elo.module.components.lists.03\",\"defaultLanguage\":\"de\",\"status\":1003,\"build\":1,\"minimize\":true,\"noArchiving\":false,\"jsLibs\":[\"Module.js\",\"api\/module\/components\/lists\/UiGridUtils.js\",\"services\/ModalDialogService.js\",\"controllers\/modal-elo-tree\/ModalEloTree.js\",\"directives\/list\/List.js\",\"directives\/tree\/Tree.js\"],\"jsDebugLibs\":[],\"cssLibs\":[\"elo.module.components.lists.css\"],\"modules\":[\"elo.module.components.03\",\"elo.third.angularjs.ui-grid.03\"],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["elo.module.components.lists.03"];</script><script type="text/javascript" src="./modules/elo.module.components.lists.03/build/js_locales/eloModuleComponentsLists03_en.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.lists.03/Module.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.lists.03/api/module/components/lists/UiGridUtils.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.lists.03/services/ModalDialogService.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.lists.03/controllers/modal-elo-tree/ModalEloTree.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.lists.03/directives/list/List.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/elo.module.components.lists.03/directives/tree/Tree.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["XLSX"] = JSON.parse("{\"id\":\"XLSX\",\"defaultLanguage\":\"\",\"status\":1003,\"build\":2,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"xlsx.full.min.js\"],\"jsDebugLibs\":[\"xlsx.full.min.js\"],\"cssLibs\":[],\"modules\":[],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["XLSX"];</script><script type="text/javascript" src="./modules/XLSX/xlsx.full.min.js?_build=2&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["angular-route.min.js"] = JSON.parse("{\"id\":\"angular-route.min.js\",\"defaultLanguage\":\"\",\"status\":1003,\"build\":14,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"angular-route.js\"],\"jsDebugLibs\":[\"angular-route.js\"],\"cssLibs\":[],\"modules\":[],\"deprecated\":false,\"archivedBuild\":11}");elo.actualModule = elo.modules["angular-route.min.js"];</script><script type="text/javascript" src="./modules/angular-route.min.js/angular-route.js?_build=14&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["angular-ui-select"] = JSON.parse("{\"id\":\"angular-ui-select\",\"defaultLanguage\":\"en\",\"status\":1003,\"build\":5,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"angular-ui-select.js\"],\"jsDebugLibs\":[],\"cssLibs\":[],\"modules\":[],\"deprecated\":false,\"archivedBuild\":3}");elo.actualModule = elo.modules["angular-ui-select"];</script><script type="text/javascript" src="./modules/angular-ui-select/build/js_locales/angular-ui-select_en.js?_build=5&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/angular-ui-select/angular-ui-select.js?_build=5&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["sol.common.01"] = JSON.parse("{\"id\":\"sol.common.01\",\"defaultLanguage\":\"\",\"status\":1001,\"build\":108,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"lib_Class.js\",\"lib_sol.common.StringUtils.js\",\"lib_sol.common.IxUtils.js\",\"lib_sol.common.Statistics.js\",\"lib_sol.common.ObjectUtils.js\"],\"jsDebugLibs\":[],\"cssLibs\":[],\"modules\":[\"elo.third.momentjs.01\"],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["sol.common.01"];</script><script type="text/javascript" src="./modules/sol.common.01/lib_Class.js?_build=108&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/sol.common.01/lib_sol.common.StringUtils.js?_build=108&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/sol.common.01/lib_sol.common.IxUtils.js?_build=108&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/sol.common.01/lib_sol.common.Statistics.js?_build=108&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/sol.common.01/lib_sol.common.ObjectUtils.js?_build=108&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["ng-file-upload-master"] = JSON.parse("{\"id\":\"ng-file-upload-master\",\"defaultLanguage\":\"\",\"status\":1003,\"build\":4,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"dist\/FileAPI.min.js\",\"dist\/ng-file-upload.min.js\",\"dist\/ng-file-upload-all.min.js\",\"dist\/ng-file-upload-shim.min.js\"],\"jsDebugLibs\":[],\"cssLibs\":[],\"modules\":[],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["ng-file-upload-master"];</script><script type="text/javascript" src="./modules/ng-file-upload-master/dist/FileAPI.min.js?_build=4&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/ng-file-upload-master/dist/ng-file-upload.min.js?_build=4&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/ng-file-upload-master/dist/ng-file-upload-all.min.js?_build=4&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/ng-file-upload-master/dist/ng-file-upload-shim.min.js?_build=4&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["jquery-3.7.1.min"] = JSON.parse("{\"id\":\"jquery-3.7.1.min\",\"defaultLanguage\":\"\",\"status\":1003,\"build\":4,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"jquery-3.7.1.min.js\",\"jquery-barcode.min.js\",\"jquery.qrcode.min.js\"],\"jsDebugLibs\":[\"jquery-3.7.1.min.js\",\"jquery-barcode.min.js\",\"jquery.qrcode.min.js\"],\"cssLibs\":[],\"modules\":[],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["jquery-3.7.1.min"];</script><script type="text/javascript" src="./modules/jquery-3.7.1.min/jquery-3.7.1.min.js?_build=4&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/jquery-3.7.1.min/jquery-barcode.min.js?_build=4&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/jquery-3.7.1.min/jquery.qrcode.min.js?_build=4&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["eon.RegistraturaServices"] = JSON.parse("{\"id\":\"eon.RegistraturaServices\",\"defaultLanguage\":\"\",\"status\":1001,\"build\":14,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"Module.js\",\"services\/FileService\/FileService.js\",\"services\/AuditService\/AuditService.js\",\"services\/UserService\/UserService.js\"],\"jsDebugLibs\":[],\"cssLibs\":[],\"modules\":[\"elo.third.angularjs.ui.03\"],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["eon.RegistraturaServices"];</script><script type="text/javascript" src="./modules/eon.RegistraturaServices/Module.js?_build=14&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/eon.RegistraturaServices/services/FileService/FileService.js?_build=14&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/eon.RegistraturaServices/services/AuditService/AuditService.js?_build=14&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/eon.RegistraturaServices/services/UserService/UserService.js?_build=14&_version=23.06.000"></script>
+<script type="text/javascript">elo.namespace("elo.modules");elo.modules["eon.ArhivareServices"] = JSON.parse("{\"id\":\"eon.ArhivareServices\",\"defaultLanguage\":\"en\",\"status\":1001,\"build\":1,\"minimize\":false,\"noArchiving\":false,\"jsLibs\":[\"Module.js\",\"services\/ArhivareService\/ArhivareService.js\"],\"jsDebugLibs\":[],\"cssLibs\":[],\"modules\":[\"elo.third.angularjs.03\"],\"deprecated\":false,\"archivedBuild\":0}");elo.actualModule = elo.modules["eon.ArhivareServices"];</script><script type="text/javascript" src="./modules/eon.ArhivareServices/build/js_locales/eonArhivareServices_en.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/eon.ArhivareServices/Module.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript" src="./modules/eon.ArhivareServices/services/ArhivareService/ArhivareService.js?_build=1&_version=23.06.000"></script>
+<script type="text/javascript">if (elo && elo.webapps && elo.webapps.WebApp && elo.webapps.WebApp.init) {elo.webapps.WebApp.init();}</script>
+<script type="text/javascript" src="./app/Module.js?_build=21&_version=23.06.000"></script>
+<script type="text/javascript" src="./app/controllers/comandaRidicareArhiva/comandaRidicareArhiva.js?_build=21&_version=23.06.000"></script>
+<script type="text/javascript" src="./app/controllers/retragereArhivaRecurenta/retragereArhivaRecurenta.js?_build=21&_version=23.06.000"></script>
+<script type="text/javascript" src="./app/controllers/retragereIstoricArhiva/retragereIstoricArhiva.js?_build=21&_version=23.06.000"></script>
+<script type="text/javascript" src="./app/utils/directive.js?_build=21&_version=23.06.000"></script>
+<script type="text/javascript" src="./app/controllers/rapoarte/rapoarte.js?_build=21&_version=23.06.000"></script>
+
+<script type="text/javascript" src="./app/ArhEon.js?_build=21&_version=23.06.000"></script>
+<link rel="stylesheet" type="text/css" href="./modules/elo.third.bootstrap.02/css/bootstrap.min.css?_build=1&_version=23.06.000"/>
+<link rel="stylesheet" type="text/css" href="./modules/elo.module.components.03/elo.module.components.css?_build=1&_version=23.06.000"/>
+<link rel="stylesheet" type="text/css" href="./modules/elo.third.angularjs.ui-grid.03/ui-grid.min.css?_build=1&_version=23.06.000"/>
+<link rel="stylesheet" type="text/css" href="./modules/elo.module.components.lists.03/elo.module.components.lists.css?_build=1&_version=23.06.000"/>
+
+<link rel="stylesheet" type="text/css" href="./resources/css/select.min.css?_build=21&_version=23.06.000"/>
+
+<link rel="stylesheet" type="text/css" href="./resources/css/ArhEon.css?_build=21&_version=23.06.000"/>
+    </body>

@@ -1,0 +1,493 @@
+<div class="container" ng-controller="retragereArhivaRecurenta as ctrl">
+
+	<div class="box-border" style="margin-bottom: 20px;">
+		<form name="frmRetragereRecurenta" class="hide-css-required" novalidate>
+
+			<table class="full-width mt6" id="tableForm">
+
+				<!-- START - formular solicitare -->
+				<tr>
+					<td colspan="6" class="cBlue1 text-left"><span>Detalii solicitare</span></td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Numar inregistrare</td>
+					<td class="text-left">
+						<input class="form-control" readonly>
+					</td>
+					<td class="text-left">Data inregistrare</td>
+					<td class="text-left">
+						<input class="form-control" ng-value="ctrl.now | date:'dd.MM.yyyy HH:mm'" readonly>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Motiv</td>
+					<td class="text-left"
+						ng-class="{'has-error': frmRetragereRecurenta.motiv_retragere.$touched && !ctrl.model.motiv_retragere}">
+						<select class="form-control" ng-model="ctrl.model.motiv_retragere" name="motiv_retragere"
+							ng-options="m for m in ctrl.optMotiv" required>
+							<option value="">Selecteaza...</option>
+						</select>
+						<div class="input-error-text" ng-show="frmRetragereRecurenta.motiv_retragere.$touched
+								&& frmRetragereRecurenta.motiv_retragere.$error.required">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+
+					<td class="text-left">Status</td>
+					<td class="text-left">
+						<input class="form-control" ng-model="ctrl.model.status_preview" readonly>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Modalitate livrare</td>
+					<td class="text-left"
+						ng-class="{'has-error': frmRetragereRecurenta.modalitate_livrare.$touched && !ctrl.model.modalitate_livrare}">
+						<select class="form-control" ng-model="ctrl.model.modalitate_livrare" name="modalitate_livrare"
+							ng-options="m for m in ctrl.optLivrare" required>
+							<option value="">Selecteaza...</option>
+						</select>
+						<div class="input-error-text" ng-show="frmRetragereRecurenta.modalitate_livrare.$touched
+								&& frmRetragereRecurenta.modalitate_livrare.$error.required">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+
+					<td class="text-left">Urgent</td>
+					<td class="text-left">
+						<input type="checkbox" class="arh-checkbox" ng-model="ctrl.model.urgent">
+					</td>
+				</tr>
+
+				<tr ng-if="ctrl.model.modalitate_livrare == 'Curier'">
+					<td class="text-left">Localitate</td>
+					<td class="text-left"
+						ng-class="{'has-error': frmRetragereRecurenta.localitate.$touched && !ctrl.model.localitate}">
+						<input type="text" class="form-control" ng-model="ctrl.model.localitate" name="localitate"
+							maxlength="20" required />
+						<div class="input-error-text" ng-show="frmRetragereRecurenta.localitate.$touched
+								&& frmRetragereRecurenta.localitate.$error.required">
+							Acest camp este obligatoriu
+						</div>
+						<div class="input-error-text" ng-show="frmRetragereRecurenta.localitate.$touched &&
+              frmRetragereRecurenta.localitate.$error.maxlength">
+							Maxim 20 caractere
+						</div>
+					</td>
+
+					<td class="text-left">Numar telefon</td>
+					<td class="text-left"
+						ng-class="{'has-error': frmRetragereRecurenta.telefon.$touched && !ctrl.model.telefon}">
+						<input type="text" class="form-control" ng-model="ctrl.model.telefon" name="telefon"
+							maxlength="14" required />
+						<div class="input-error-text" ng-show="frmRetragereRecurenta.telefon.$touched
+								&& frmRetragereRecurenta.telefon.$error.required">
+							Acest camp este obligatoriu
+						</div>
+						<div class="input-error-text" ng-show="frmRetragereRecurenta.telefon.$touched &&
+              frmRetragereRecurenta.telefon.$error.maxlength">
+							Maxim 14 caractere
+						</div>
+					</td>
+				</tr>
+
+				<tr ng-if="ctrl.model.modalitate_livrare == 'Curier'">
+					<td class="text-left">Adresa</td>
+					<td colspan="3" class="text-left"
+						ng-class="{'has-error': frmRetragereRecurenta.adresa.$touched && !ctrl.model.adresa}">
+						<input type="text" class="form-control" ng-model="ctrl.model.adresa" name="adresa"
+							maxlength="105" required />
+						<div class="input-error-text" ng-show="frmRetragereRecurenta.adresa.$touched
+								&& frmRetragereRecurenta.adresa.$error.required">
+							Acest camp este obligatoriu
+						</div>
+						<div class="input-error-text" ng-show="frmRetragereRecurenta.adresa.$touched &&
+								 frmRetragereRecurenta.adresa.$error.maxlength">
+							Maxim 105 caractere
+						</div>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="text-left">Departament</td>
+					<td class="text-left" style="max-width: 150px;">
+						<ui-select ng-model="ctrl.model.departament">
+							<ui-select-match placeholder="Selecteaza..."
+								ng-attr-title="{{$select.selected.nume}}">{{$select.selected.nume}}</ui-select-match>
+							<ui-select-choices repeat="d in ctrl.optiuniDepartament | filter: $select.search">
+								<div ng-bind="d.nume"></div>
+							</ui-select-choices>
+						</ui-select>
+
+						<div class="input-error-text" ng-show="ctrl.submitted && !ctrl.comanda.departament">
+							Acest camp este obligatoriu
+						</div>
+					</td>
+				</tr>
+
+				<tr>
+					<td colspan="6" class="text-left">Observatii</td>
+				</tr>
+				<tr>
+					<td colspan="6" class="text-left">
+						<textarea class="form-control" ng-model="ctrl.model.observatii" maxlength="120">
+						</textarea>
+						<div class="input-error-text" ng-show="frmRetragereRecurenta.observatii.$touched &&
+                   frmRetragereRecurenta.observatii.$error.maxlength">
+							Maxim 20 caractere
+						</div>
+					</td>
+				</tr>
+
+				<!-- END - formular solicitare -->
+
+				<!-- START - cautare documente -->
+
+				<tr>
+					<td colspan="6" class="cBlue1 text-left"><span>Cautare documente arhiva recurenta</span></td>
+				</tr>
+
+				<tr>
+					<td colspan="6" style="padding-top: 6px;">
+						<table style="width: 100%;">
+							<tr>
+								<!-- STANGA: filtre + date -->
+								<td style="vertical-align: top;">
+									<table style="border-left: 2px solid #81b1ec;">
+										<tbody>
+											<!-- GRUPURI OR (linie intrerupta intre ele) -->
+											<tr ng-repeat="group in ctrl.filterGroups track by $index"
+												ng-init="gIndex = $index">
+												<td>
+													<table class="table-hover"
+														style="border-left: 2px solid #8fff62;
+                                                                  background: linear-gradient(122deg, #ecffe5 0%, rgba(0,255,51,0) 31%);"
+														ng-style="{'margin-top': ($first ? '10px' : '20px')}">
+														<tbody>
+															<!-- FILTRE AND in același grup (linie verde neintrerupta) -->
+															<tr ng-repeat="f in group track by $index"
+																ng-init="idx = $index">
+																<td>
+																	<select class="form-control"
+																		style="min-width: 200px; margin: 0;"
+																		ng-model="f.column"
+																		ng-options="c.key as c.label for c in ctrl.allowColumns">
+																		<option value="Selecteaza...">Selecteaza...
+																		</option>
+																	</select>
+																</td>
+
+																<td>
+																	<select class="form-control" style="margin: 0;"
+																		ng-model="f.op"
+																		ng-options="o.code as o.label for o in ctrl.opOptions">
+																	</select>
+																</td>
+
+																<td style="min-width: 240px;"
+																	ng-class="{'has-error': ctrl.opRequiresValue(f.op) && !f.value && ctrl.filtersTouched}">
+																	<input class="form-control"
+																		style="min-width: 200px; margin: 0;"
+																		ng-model="f.value" placeholder="valoare"
+																		ng-disabled="f.op === 'IS_EMPTY' || f.op === 'IS_NOT_EMPTY'">
+																	<div class="input-error-text"
+																		ng-show="ctrl.opRequiresValue(f.op) && !f.value && ctrl.filtersTouched">
+																		Acest camp este obligatoriu
+																	</div>
+																</td>
+
+															</tr>
+														</tbody>
+													</table>
+												</td>
+											</tr>
+
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+				<!-- END - cautare documente -->
+
+				<tr>
+					<td colspan="6" class="padd-bottom0">
+						<!-- <div class="box-bottom padd-bottom10"> -->
+						<div class="box-bottom padd-bottom10">
+							<!-- IMPORTANT: reset page on new search -->
+							<button type="button" class="btn-def hover-blue"
+								ng-click="ctrl.search(true, true)">Cauta</button>
+
+							<!-- <a type="button" class="btn-def hover-red"
+                               ng-click="ctrl.results=[]; ctrl.selectedUuid=null;">
+                                Anuleaza
+                            </a> -->
+
+							<!-- <button type="button" class="btn-def hover-green" style="float:right" -->
+
+						</div>
+					</td>
+				</tr>
+
+				<!-- Results grid -->
+				<tr>
+					<td colspan="6">
+						<div class="arh-table-wrapper">
+							<table class="table table-sm table-striped table-hover align-middle"
+								style="table-layout: auto;">
+								<thead class="table-dark">
+									<!-- Header row -->
+									<tr>
+										<th style="width:40px;"></th>
+										<th>SKP</th>
+										<th>Numar ordine</th>
+										<th>CRC</th>
+										<th>Cod NLC</th>
+										<th>Numar Contract</th>
+										<th>Cod Client</th>
+										<th>An contract</th>
+										<th>Data Arhivare</th>
+									</tr>
+
+									<!-- ✅ Filter row (like Rapoarte) -->
+									<tr>
+										<th></th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.skp"
+												ng-model-options="{ debounce: 300 }"
+												ng-change="ctrl.onColumnFilterChange()" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.numar_ordine"
+												ng-model-options="{ debounce: 300 }"
+												ng-change="ctrl.onColumnFilterChange()" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.crc"
+												   ng-model-options="{ debounce: 300 }"
+												   ng-change="ctrl.onColumnFilterChange()" placeholder="Caută..."
+												   class="form-control form-control-sm fw-normal">
+										</th>
+										  
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.cod_nlc"
+												ng-model-options="{ debounce: 300 }"
+												ng-change="ctrl.onColumnFilterChange()" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.numar_contract"
+												ng-model-options="{ debounce: 300 }"
+												ng-change="ctrl.onColumnFilterChange()" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.cod_client"
+												ng-model-options="{ debounce: 300 }"
+												ng-change="ctrl.onColumnFilterChange()" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.an"
+												ng-model-options="{ debounce: 300 }"
+												ng-change="ctrl.onColumnFilterChange()" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal">
+										</th>
+
+										<th>
+											<input type="text" ng-model="ctrl.columnFilters.data_arhivare"
+												ng-model-options="{ debounce: 300 }"
+												ng-change="ctrl.onColumnFilterChange()" placeholder="Caută..."
+												class="form-control form-control-sm fw-normal">
+										</th>
+									</tr>
+								</thead>
+
+								<tbody>
+									<tr ng-repeat="r in ctrl.results">
+
+										<td class="text-center">
+											<input type="checkbox" class="arh-checkbox" ng-checked="ctrl.isSelected(r)"
+												ng-click="ctrl.toggleSelect(r)">
+										</td>
+
+										<td title="{{ r.skp }}">{{ r.skp }}</td>
+										<td title="{{ r.numar_ordine }}">{{ r.numar_ordine }}</td>
+										<td title="{{ r.crc }}">{{ r.crc }}</td>
+										<td title="{{ r.cod_nlc }}">{{ r.cod_nlc }}</td>
+										<td title="{{ r.numar_contract }}">{{ r.numar_contract }}</td>
+										<td title="{{ r.cod_client }}">{{ r.cod_client }}</td>
+										<td title="{{ r.an }}">{{ r.an }}</td>
+										<td title="{{ r.data_arhivare | date:'yyyy'}}">
+											{{ r.data_arhivare | date:'yyyy'}}
+										</td>
+
+									</tr>
+
+									<tr ng-if="!ctrl.results || !ctrl.results.length">
+										<td colspan="10" class="text-center">
+											Nu exista rezultate pentru criteriile selectate.
+										</td>
+									</tr>
+								</tbody>
+
+							</table>
+						</div>
+
+						<!-- Pagination controls -->
+						<div class="pageinare" ng-show="numarPagini > 0">
+
+
+							<div class="page" ng-show="numarPagini > 0 && currentPage > 0"
+								ng-click="setCurrentPage(currentPage-1)">&#x276E;</div>
+
+							<div class="pageinare" ng-show="numarPagini < 5">
+								<div class="page page-set" ng-click="setCurrentPage(0)" data-value="0">1</div>
+								<div class="page" ng-repeat="page in pages track by $index" ng-show="($index > 0)"
+									ng-click="setCurrentPage(page)" data-value="{{page}}">{{page + 1}}</div>
+							</div>
+							<div class="pageinare" ng-show="numarPagini >= 5">
+								<div class="page page-set" ng-click="setCurrentPage(0)" data-value="0">1</div>
+								&nbsp; &nbsp; &nbsp;
+								<div class="page" ng-repeat="page in pages track by $index"
+									ng-click="setCurrentPage(page)" data-value="{{page}}">{{page + 1}}</div>
+								&nbsp; &nbsp; &nbsp;
+								<div class="page" ng-show="numarPagini > 0" ng-click="setCurrentPage(numarPagini - 1)"
+									data-value="{{numarPagini - 1}}">{{numarPagini}}</div>
+							</div>
+							<div class="page" ng-show="numarPagini > 0 && currentPage < numarPagini - 1"
+								ng-click="setCurrentPage(currentPage+1)">&#x276F;</div>
+						</div>
+
+
+					</td>
+				</tr>
+
+				<!-- Accordion: Elemente selectate -->
+				<tr>
+					<td colspan="6">
+						<div class="arh-accordion">
+
+							<!-- Header -->
+							<div class="arh-accordion-header"
+								ng-click="ctrl.showSelectedAccordion = !ctrl.showSelectedAccordion">
+								<span class="arh-accordion-icon">
+									<span ng-if="ctrl.showSelectedAccordion">&#9660;</span> <!-- ▼ -->
+									<span ng-if="!ctrl.showSelectedAccordion">&#x25B6;</span> <!-- ▶ -->
+								</span>
+								<span>Elemente selectate ({{ ctrl.getSelectedUuids().length }})</span>
+							</div>
+
+							<!-- Body -->
+							<div class="arh-accordion-body" ng-show="ctrl.showSelectedAccordion">
+
+								<div ng-if="!ctrl.getSelectedUuids().length" class="text-muted"
+									style="padding: 10px 15px;">
+									Nu exista elemente selectate.
+								</div>
+
+								<div ng-if="ctrl.getSelectedUuids().length">
+									<table class="table table-sm table-striped table-hover align-middle small-table">
+										<thead>
+											<tr>
+												<th>SKP</th>
+												<th>Numar ordine</th>
+												<th>CRC</th>
+												<th>Cod NLC</th>
+												<th>Numar Contract</th>
+												<th>Nume Abonat</th>
+												<th>Cod Client</th>
+												<th>An contract</th>
+												<th>Data Arhivare</th>
+												<th style="width: 70px; text-align:center;">Actiune</th>
+											</tr>
+										</thead>
+										<tbody>
+											<!-- (uuid, row) iteration over selectedDocs -->
+											<tr ng-repeat="(uuid, row) in ctrl.selectedDocs">
+												<td>{{ row.skp }}</td>
+												<td>{{ row.numar_ordine }}</td>
+												<td>{{ row.crc }}</td>
+												<td>{{ row.cod_nlc }}</td>
+												<td>{{ row.numar_contract }}</td>
+
+												<td ng-class="{'has-error': (ctrl.isSubmitted || frmRetragereRecurenta['nume_abonat_'+uuid].$touched) 
+                             						&& frmRetragereRecurenta['nume_abonat_'+uuid].$error.required}">
+													<input type="text"
+															class="form-control form-control-sm fw-normal"
+															ng-model="row.nume_abonat"
+															name="nume_abonat_{{uuid}}"
+															maxlength="50"
+															required />
+
+													<div class="input-error-text"
+														ng-show="(ctrl.isSubmitted || frmRetragereRecurenta['nume_abonat_'+uuid].$touched) 
+																	&& frmRetragereRecurenta['nume_abonat_'+uuid].$error.required">
+														Acest camp este obligatoriu
+													</div>
+
+													<div class="input-error-text"
+														ng-show="frmRetragereRecurenta['nume_abonat_'+uuid].$touched 
+																	&& frmRetragereRecurenta['nume_abonat_'+uuid].$error.maxlength">
+														Maxim 50 caractere
+													</div>
+												</td>
+
+												<td>{{ row.cod_client }}</td>
+												<td>{{ row.an }}</td>
+												<td>{{ row.data_arhivare | date:'yyyy'}}</td>
+												<!-- <td class="text-center">
+													<span class="arh-remove-selected"
+														ng-click="ctrl.removeSelected(uuid, $event)"
+														title="Elimina din selectie">
+														✕
+													</span>
+												</td> -->
+
+												<td class="text-center">
+													<button type="button" class="btn-def hover-red"
+														ng-click="ctrl.removeSelected(uuid, $event)">Sterge</button>
+												</td>
+
+											</tr>
+										</tbody>
+									</table>
+								</div>
+
+							</div>
+						</div>
+					</td>
+				</tr>
+
+				<tr>
+					<td colspan="6" class="padd-bottom0">
+						<div class="box-bottom padd-bottom10">
+							<button type="button" class="btn-def hover-red" style="margin:unset !important"
+								ng-click="ctrl.anuleazaSolicitare(false)"
+								ng-disabled="!ctrl.selectedDocsLength || !ctrl.selectedDocs"
+								disabled="disabled">Anuleaza</button>
+							<button type="button" class="btn-def hover-green" style="float:right"
+								ng-click="ctrl.addSolicitare()"
+								ng-disabled="!ctrl.selectedDocsLength || !ctrl.selectedDocs || !ctrl.canSubmit() || frmRetragereRecurenta.$invalid" 
+								disabled="disabled">Trimite
+								solicitarea</button>
+						</div>
+					</td>
+				</tr>
+
+			</table>
+		</form>
+	</div>
+</div>

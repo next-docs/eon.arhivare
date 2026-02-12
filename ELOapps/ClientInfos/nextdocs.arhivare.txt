@@ -1,0 +1,20 @@
+﻿{
+  "selector": {
+    "ids": []
+  },
+  "view": {
+    "previewDesired": false,
+    "show": "CONTENT_FORM_FEED",
+    "focus": "APP",
+    "type": "REGION",
+    "client": "ALL"
+  },
+  "web": {
+    "namespace": "",
+    "eloSession": true,
+    "url": "https://ndelodev03:9093/ix-EON/plugin/de.elo.ix.plugin.proxy/wf/apps/app/custom.nextdocs.ArhEon/?debug\u003dfalse",
+    "name": "Arhivare",
+    "iconName": "tile-FileBox"
+  },
+  "id": "nextdocs.arhivare"
+}

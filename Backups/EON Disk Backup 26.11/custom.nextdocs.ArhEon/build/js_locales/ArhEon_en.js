@@ -1,0 +1,11 @@
+var elo = elo || {};
+elo.locale = elo.locale || {};
+elo.locale.language = "en";
+elo.locale.store = elo.locale.store || {};
+elo.locale.store["The"] = "file must be stored as UTF-8.";
+elo.locale.store["with"] = "the language postfix (e.g. myApp.properties -> myApp_<lang>.properties,";
+elo.locale.store["Here"] = "you can define all text you need in your app. This text can be";
+elo.locale.store["APP.LOADING"] = "Loading data...";
+elo.locale.store["APP.NAME"] = "Arhiva";
+elo.locale.store["localized"] = "in new properties files by creating a copy of this file";
+elo.locale.store["where"] = "<lang> is the two letter ISO 639 language e.g. <lang> = fr).";

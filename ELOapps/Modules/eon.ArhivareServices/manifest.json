@@ -1,0 +1,19 @@
+{
+  "id": "eon.ArhivareServices",
+  "defaultLanguage": "en",
+  "status": 1001,
+  "build": 1,
+  "minimize": false,
+  "noArchiving": false,
+  "jsLibs": [
+    "Module.js",
+    "services/ArhivareService/ArhivareService.js"
+  ],
+  "jsDebugLibs": [],
+  "cssLibs": [],
+  "modules": [
+    "elo.third.angularjs.03"
+  ],
+  "deprecated": false,
+  "archivedBuild": 0
+}

@@ -1,0 +1,173 @@
+<div class="container" ng-controller="Rapoarte as ctrl">
+    <div class="box-border">
+        <form name="frmRapoarte" class="hide-css-required" novalidate>
+            <table class="full-width mt6" id="tableForm">
+                <tr>
+                    <td colspan="6">
+                        <button type="button" class="btn-def hover-green" ng-click="ctrl.exportRaportToXlsx()">Export
+                            Excel</button>
+                        <a type="button" class="btn-def hover-red" ng-click="ctrl.clearFilters()">Anuleaza</a>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="6" class="cBlue1 text-left"><span>Rapoarte</span></td>
+                </tr>
+
+                <tr>
+                    <td colspan="6">
+                        <div class="arh-table-wrapper">
+                            <table class="table table-sm table-striped table-hover align-middle table-layout-fixed">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th style="width:45px">Nr. crt.</th>
+                                        <th>Nr. comanda</th>
+                                        <th>Tip operatiune</th>
+                                        <th>Data solicitare</th>
+                                        <th>Departament solicitant</th>
+                                        <th>Status</th>
+                                        <th>CRC</th>
+                                        <th>Cod NLC</th>
+                                        <th>Nume abonat</th>
+                                        <th>Numar Contract</th>
+                                        <th>Cod Client</th>
+                                        <th style="width: 20%">Observatii</th>
+                                        <th>User</th>
+                                    </tr>
+
+                                    <!-- filtre -->
+                                    <tr>
+                                        <td></td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.numar_comanda"
+                                                ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+                                                class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.tip_operatiune"
+                                                ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+                                                class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.data_solicitare"
+                                                ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+                                                class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.departament"
+                                                ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+                                                class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.status"
+                                                ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+                                                class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.crc"
+                                                ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+                                                class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.cod_nlc"
+                                                ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+                                                class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.nume_abonat"
+                                                ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+                                                class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.numar_contract"
+                                              ng-model-options="{ debounce: 300 }" placeholder="Cauta..."
+                                              class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+                                          
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.cod_client"
+                                              ng-model-options="{ debounce: 300 }" placeholder="Cauta..."
+                                              class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.observatii"
+                                                ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+                                                class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+
+                                        <td>
+                                            <input type="text" ng-model="ctrl.filters.user"
+                                                ng-model-options="{ debounce: 300 }" placeholder="Caută..."
+                                                class="form-control form-control-sm" ng-change="ctrl.onFilterChange()">
+                                        </td>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+                                    <tr ng-repeat="comanda in ctrl.comenzi track by $index">
+                                        <td>{{ currentPage * pageSize + $index + 1 }}</td>
+                                        <td>{{ comanda.numar_comanda }}</td>
+                                        <td>{{ comanda.tip_operatiune }}</td>
+                                        <td>{{ comanda.data_solicitare }}</td>
+                                        <td>{{ comanda.departament }}</td>
+                                        <td>{{ comanda.status }}</td>
+                                        <td>{{ comanda.crc }}</td>
+                                        <td>{{ comanda.cod_nlc }}</td>
+                                        <td>{{ comanda.nume_abonat }}</td>
+                                        <td>{{ comanda.numar_contract }}</td>
+                                        <td>{{ comanda.cod_client }}</td>
+                                        <td truncate-cell text="comanda.observatii" limit="60"></td>
+                                        <td>{{ comanda.user }}</td>
+                                    </tr>
+
+                                    <tr ng-if="!ctrl.comenzi || !ctrl.comenzi.length">
+                                        <td colspan="12" class="text-center">
+                                            Nu exista inregistrari.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination controls -->
+                        <div class="pageinare" ng-show="numarPagini > 0">
+
+                            <div class="page" ng-show="numarPagini > 0 && currentPage > 0"
+                                ng-click="setCurrentPage(currentPage-1)">&#x276E;</div>
+
+                            <div class="pageinare" ng-show="numarPagini < 5">
+                                <div class="page page-set" ng-click="setCurrentPage(0)" data-value="0">1</div>
+                                <div class="page" ng-repeat="page in pages track by $index" ng-show="($index > 0)"
+                                    ng-click="setCurrentPage(page)" data-value="{{page}}">{{page + 1}}</div>
+                            </div>
+
+                            <div class="pageinare" ng-show="numarPagini >= 5">
+                                <div class="page page-set" ng-click="setCurrentPage(0)" data-value="0">1</div>
+                                &nbsp; &nbsp; &nbsp;
+                                <div class="page" ng-repeat="page in pages track by $index"
+                                    ng-click="setCurrentPage(page)" data-value="{{page}}">{{page + 1}}</div>
+                                &nbsp; &nbsp; &nbsp;
+                                <div class="page" ng-show="numarPagini > 0" ng-click="setCurrentPage(numarPagini - 1)"
+                                    data-value="{{numarPagini - 1}}">{{numarPagini}}</div>
+                            </div>
+
+                            <div class="page" ng-show="numarPagini > 0 && currentPage < numarPagini - 1"
+                                ng-click="setCurrentPage(currentPage+1)">&#x276F;</div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>

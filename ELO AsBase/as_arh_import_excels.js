@@ -34,17 +34,17 @@ var SFTP_PASS = config.sftp.password;
 
 var LOCAL_TMP = sol.common.FileUtils.getTempDirPath();
 
-var RECUR_IN  = config.sftp.excel_import.recurenta.in;
+var RECUR_IN = config.sftp.excel_import.recurenta.in;
 var RECUR_OUT = config.sftp.excel_import.recurenta.out;
 var RECUR_ERR = config.sftp.excel_import.recurenta.err;
 
-var IST_IN  = (config.sftp.excel_import.istoric && config.sftp.excel_import.istoric.in)  || "";
+var IST_IN = (config.sftp.excel_import.istoric && config.sftp.excel_import.istoric.in) || "";
 var IST_OUT = (config.sftp.excel_import.istoric && config.sftp.excel_import.istoric.out) || "";
 var IST_ERR = (config.sftp.excel_import.istoric && config.sftp.excel_import.istoric.err) || "";
 
 // SQL targets
 var SQL_TABLE_RECUR = "[Lucru_EON].[dbo].[arh_arhiva_recurenta]";
-var SQL_TABLE_IST   = "[Lucru_EON].[dbo].[arh_istoric_arhiva_documente]";
+var SQL_TABLE_IST = "[Lucru_EON].[dbo].[arh_istoric_arhiva_documente]";
 
 // Expected headers (exact, but we normalize a bit)
 var EXPECTED_HEADERS = [
@@ -57,6 +57,48 @@ var EXPECTED_HEADERS = [
   "AN",
   "DATA PROCESARE"
 ];
+
+// ==========================================================================
+// ISTORIC: fixed SQL insert header (this is the "fixed header" you asked for)
+// ==========================================================================
+var IST_SQL_HEADER = [
+  "skp",
+  "Localitate",
+  "Tip_Produs",
+  "an_creare",
+  "Tip_contract",
+  "cod_cutie_obiect",
+  "cod_obiect"
+];
+
+// CASNIC / NONCASNIC extractor (like python)
+var TIP_CONTRACT_RE = /\b(CASNIC|NONCASNIC)\b/i;
+
+// Candidate header names (normalized matching)
+var IST_COL_CANDIDATES = {
+  skp: ["SKP", "skp"],
+  localitate: ["Localitate", "localitate"],
+  tip_excel: ["Tip", "tip"], // optional legacy
+  tip_produs: ["Tip_Produs", "tip_produs", "Tip Produs", "tip produs", "Tip_Contract", "tip_contract", "Tip Contract", "tip contract", "tip produs/contract"],
+  tip_contract: ["Tip_Contract", "tip_contract", "Tip Contract", "tip contract"],
+
+  an_creare: ["an_creare", "AN", "an"],
+
+  cod_cutie_obiect: ["cod_cutie_obiect", "CUTIE MARE", "cutie mare"],
+  cod_obiect: ["cod_obiect", "CUTIE MICA", "cutie mica"],
+
+  crc: ["CRC", "crc"],
+  sumar: ["Sumar", "sumar"],
+  gama_de_la: ["gama_de_la", "GAMA_DE_LA", "gama de la"],
+  gama_pana_la: ["gama_pana_la", "GAMA_PANA_LA", "gama pana la"],
+  tip_doc_cod_arh: ["tip_doc_cod_arh", "TIP_DOC_COD_ARH", "tip doc cod arh"],
+  tip_pastrare: ["tip_pastrare", "TIP_PASTRARE", "tip pastrare"],
+  data_creare: ["data_creare", "DATA_CREARE", "data creare"],
+  locatie_geografica: ["locatie_geografica", "LOCATIE_GEOGRAFICA", "locatie geografica"],
+  divizie: ["divizie", "DIVIZIE"],
+  departament: ["departament", "DEPARTAMENT"]
+};
+
 
 // ==========================================================================
 // ENTRY POINT
@@ -79,7 +121,8 @@ var response = {
 };
 
 try {
-    processRecurenta();
+  processRecurenta();
+  processIstoric();
 } catch (e) {
   response.ok = false;
   logLine("FATAL ERROR: " + e);
@@ -104,7 +147,7 @@ function processRecurenta() {
       .filter(function (fn) { return isXlsx(fn); })
       .sort(function (a, b) { return a.localeCompare(b); });
 
-    response.summary.scannedFiles = files.length;
+    response.summary.scannedFiles += files.length;
 
     if (files.length === 0) {
       logLine("No .xlsx files found in: " + RECUR_IN);
@@ -122,17 +165,76 @@ function processRecurenta() {
       else response.summary.errFiles++;
 
       response.summary.insertedRows += (fileResult.insertedRows || 0);
-      response.summary.skippedRows += (fileResult.skippedRows || 0);
+      response.summary.skippedEmptyRows += (fileResult.skippedEmptyRows || 0);
+      response.summary.skippedDuplicateRows += (fileResult.skippedDuplicateRows || 0);
+
     }
 
   } finally {
-    try { sftp.disconnect(); } catch (e2) {}
+    try { sftp.disconnect(); } catch (e2) { }
   }
 }
 
+// ==========================================================================
+// MAIN: ISTORIC FLOW
+// ==========================================================================
+// ==========================================================================
+// MAIN: ISTORIC FLOW
+// ==========================================================================
+function processIstoric() {
+  // if not configured, just skip silently
+  if (!IST_IN || !IST_OUT || !IST_ERR) {
+    logLine("ISTORIC flow skipped (missing IST_* paths in config).");
+    return;
+  }
+
+  var sftp = connectToSftp();
+  if (!sftp) {
+    response.ok = false;
+    logLine("Failed to connect to SFTP.");
+    return;
+  }
+
+  try {
+    var files = listFilesInSftpDirectory(sftp, IST_IN)
+      .filter(function (fn) { return isXlsx(fn); })
+      .sort(function (a, b) { return a.localeCompare(b); });
+
+    response.summary.scannedFiles += files.length;
+
+    if (files.length === 0) {
+      logLine("No .xlsx files found in: " + IST_IN);
+      return;
+    }
+
+    // Note: keeping same summary counters (your response.summary is recurenta-centric,
+    // but we still append per-file results + logs)
+    for (var i = 0; i < files.length; i++) {
+      var fileName = files[i];
+      var fileResult = processOneIstoricFile(sftp, fileName);
+
+      response.files.push(fileResult);
+      response.summary.processedFiles++;
+
+      if (fileResult.ok) response.summary.okFiles++;
+      else response.summary.errFiles++;
+
+      response.summary.insertedRows += (fileResult.insertedRows || 0);
+      response.summary.skippedEmptyRows += (fileResult.skippedEmptyRows || 0);
+      response.summary.skippedDuplicateRows += (fileResult.skippedDuplicateRows || 0);
+
+    }
+
+  } finally {
+    try { sftp.disconnect(); } catch (e2) { }
+  }
+}
+
+
+
 function processOneRecurentaFile(sftp, fileName) {
   fileName = "" + fileName;
-  
+
   var res = {
     fileName: fileName,
     ok: false,
@@ -143,6 +245,12 @@ function processOneRecurentaFile(sftp, fileName) {
     errors: [],
     log: []
   };
+
+  var importRunId = newGuid();
+  res.importRunId = importRunId;
+  res.importFileName = fileName;
+  res.log.push("import_run_id=" + importRunId);
+  res.log.push("import_file_name=" + fileName);
 
   var startBanner = "START PROCESS " + fileName;
   var endBanner = "END PROCESS " + fileName;
@@ -164,19 +272,53 @@ function processOneRecurentaFile(sftp, fileName) {
     sftpDownloadToLocal(sftp, remoteInPath, localXlsx);
     res.log.push("Downloaded: " + remoteInPath + " -> " + localXlsx);
 
-    // 2) parse & validate headers
-    var excel = readXlsxFirstSheet(localXlsx); // returns { headers:[], rows:[{...}] }
-    validateHeaders(excel.headers);
+    // 2) parse ALL sheets
+    var sheets = readXlsxAllSheets_Recurenta(localXlsx); // [{sheetName, headers, rows}, ...]
+    if (!sheets || sheets.length === 0) {
+      throw "XLSX has no sheets.";
+    }
 
-    res.log.push("Header validation OK. Columns: " + excel.headers.join(" | "));
+    res.log.push("Sheets detected: " + sheets.length);
 
-    // 3) build rows + pre-validate
-    var prepared = prepareRecurentaRows(excel.rows, res);
-    res.skippedRows += prepared.skipped;
+    // 3) validate headers + prepare rows from ALL sheets
+    var allPreparedRows = [];
+    var totalSkippedEmpty = 0;
 
-    // 4) insert into DB (batch)
-    var inserted = insertRecurentaRows(prepared.rows, res);
+    for (var s = 0; s < sheets.length; s++) {
+      var sh = sheets[s];
+      if (!sh) continue;
+
+      // skip truly empty sheets (no headers + no rows)
+      if ((!sh.headers || sh.headers.length === 0) && (!sh.rows || sh.rows.length === 0)) {
+        continue;
+      }
+
+      // validate headers per sheet (same rule as before)
+      validateHeaders(sh.headers);
+      res.log.push("Header validation OK. Sheet=" + sh.sheetName + " Columns: " + sh.headers.join(" | "));
+
+      // prepare rows for this sheet
+      var prepared = prepareRecurentaRows(sh.rows, res);
+      if (prepared && prepared.rows && prepared.rows.length > 0) {
+        for (var k = 0; k < prepared.rows.length; k++) allPreparedRows.push(prepared.rows[k]);
+      }
+
+      totalSkippedEmpty += (res.skippedEmptyRows || 0);
+    }
+
+    // IMPORTANT: prepareRecurentaRows sets fileRes.skippedEmptyRows each time.
+    // After looping, set it to the total across all sheets (so your log is correct).
+    res.skippedEmptyRows = totalSkippedEmpty;
+
+    for (var rr = 0; rr < allPreparedRows.length; rr++) {
+      allPreparedRows[rr].import_run_id = importRunId;
+      allPreparedRows[rr].import_file_name = fileName;
+    }
+
+    // 4) insert into DB (batch) using merged rows
+    var inserted = insertRecurentaRows(allPreparedRows, res);
     res.insertedRows = inserted;
+
 
     // 5) mark OK
     res.ok = true;
@@ -228,6 +370,609 @@ function processOneRecurentaFile(sftp, fileName) {
   logLine(endBanner);
   return res;
 }
+
+
+function processOneIstoricFile(sftp, fileName) {
+  fileName = "" + fileName;
+
+  var res = {
+    fileName: fileName,
+    flow: "istoric",
+    ok: false,
+    startedAt: nowIso(),
+    endedAt: null,
+    insertedRows: 0,
+    skippedRows: 0,
+    errors: [],
+    log: []
+  };
+
+  var importRunId = newGuid();
+  res.importRunId = importRunId;
+  res.importFileName = fileName;
+  res.log.push("import_run_id=" + importRunId);
+  res.log.push("import_file_name=" + fileName);
+
+  var startBanner = "START ISTORIC " + fileName;
+  var endBanner = "END ISTORIC " + fileName;
+
+  res.log.push(startBanner);
+  logLine(startBanner);
+
+  var remoteInPath = IST_IN + "/" + fileName;
+  var localXlsx = LOCAL_TMP + "/" + fileName;
+
+  var logTxtName = fileName.replace(/\.xlsx$/i, "") + "_istoric_import_log.txt";
+  var localLogPath = LOCAL_TMP + "/" + logTxtName;
+
+  var destFolder = IST_OUT; // default; on error -> IST_ERR
+
+  try {
+    // 1) download
+    sftpDownloadToLocal(sftp, remoteInPath, localXlsx);
+    res.log.push("Downloaded: " + remoteInPath + " -> " + localXlsx);
+
+    // 2) read ALL sheets
+    var book = readXlsxAllSheets(localXlsx); // [{sheetName, headers, rows}, ...]
+    if (!book || book.length === 0) {
+      res.log.push("No sheets found in XLSX.");
+    }
+
+    res.log.push("IST SQL header fixed: " + IST_SQL_HEADER.join(" | "));
+    res.log.push("Sheets detected: " + (book ? book.length : 0));
+
+    // 3) build rows from all sheets
+    var allRows = [];
+    for (var s = 0; s < book.length; s++) {
+      var sheetObj = book[s];
+      if (!sheetObj || !sheetObj.rows || sheetObj.rows.length === 0) continue;
+
+      var prep = prepareIstoricRows(sheetObj.headers, sheetObj.rows, res, sheetObj.sheetName);
+      if (prep && prep.rows && prep.rows.length > 0) {
+        // merge
+        for (var k = 0; k < prep.rows.length; k++) allRows.push(prep.rows[k]);
+      }
+    }
+
+    res.log.push("Total prepared ISTORIC rows (all sheets): " + allRows.length);
+
+    for (var rr = 0; rr < allRows.length; rr++) {
+      allRows[rr].import_run_id = importRunId;
+      allRows[rr].import_file_name = fileName;
+    }
+
+
+
+    // 4) insert DB (batch)
+    var inserted = insertIstoricRows(allRows, res);
+    res.insertedRows = inserted;
+
+    // 5) ok
+    res.ok = true;
+    destFolder = IST_OUT;
+    res.log.push("DB insert OK. Inserted rows: " + res.insertedRows);
+
+  } catch (e) {
+    res.ok = false;
+    destFolder = IST_ERR;
+    var msg = "" + e;
+    res.errors.push(msg);
+    res.log.push("ERROR: " + msg);
+    logLine("ERROR ISTORIC processing " + fileName + ": " + msg);
+  }
+
+  // 6) write log and move file accordingly (always attempt)
+  try {
+    res.log.push(endBanner);
+
+    writeLocalTextFile(localLogPath, res.log.join("\n"));
+
+    var remoteDestXlsx = destFolder + "/" + fileName;
+    safeSftpMove(sftp, remoteInPath, remoteDestXlsx);
+
+    var remoteDestLog = destFolder + "/" + logTxtName;
+    safeSftpUpload(sftp, localLogPath, remoteDestLog);
+
+    res.log.push("Moved XLSX to: " + remoteDestXlsx);
+    res.log.push("Uploaded LOG to: " + remoteDestLog);
+
+  } catch (e2) {
+    res.ok = false;
+    res.errors.push("Post-processing (move/log upload) failed: " + e2);
+    res.log.push("Post-processing (move/log upload) failed: " + e2);
+  } finally {
+    res.endedAt = nowIso();
+    pushGlobalLogBlock(res.log);
+  }
+
+  logLine(endBanner);
+  return res;
+}
+
+
+function newGuid() {
+  return Packages.java.util.UUID.randomUUID().toString();
+}
+
+
+// ==========================================================================
+// XLSX READER (Apache POI) - ALL sheets, first row = headers
+// returns: [{ sheetName, headers:[...], rows:[{...}] }, ...]
+// ==========================================================================
+function readXlsxAllSheets(localFilePath) {
+  var FileInputStream = Packages.java.io.FileInputStream;
+  var fis = new FileInputStream(localFilePath);
+
+  try {
+    var XSSFWorkbook = Packages.org.apache.poi.xssf.usermodel.XSSFWorkbook;
+    var wb = new XSSFWorkbook(fis);
+
+    try {
+      var out = [];
+      var sheetCount = wb.getNumberOfSheets();
+
+      for (var si = 0; si < sheetCount; si++) {
+        var sheet = wb.getSheetAt(si);
+        if (!sheet) continue;
+
+        var sheetName = "" + wb.getSheetName(si);
+
+        var headerRow = sheet.getRow(0);
+        if (!headerRow) {
+          out.push({ sheetName: sheetName, headers: [], rows: [] });
+          continue;
+        }
+
+        var headers = [];
+        var headerMap = {}; // colIndex -> rawHeader (NOT normalized here)
+
+        var lastCell = headerRow.getLastCellNum();
+        if (lastCell < 0) lastCell = 0;
+
+        for (var c = 0; c < lastCell; c++) {
+          var cell = headerRow.getCell(c);
+          var raw = safeStr(getCellAsString(cell));
+          if (raw) {
+            headers.push(raw);
+            headerMap[c] = raw;
+          }
+        }
+
+        var rows = [];
+        var lastRowNum = sheet.getLastRowNum();
+        for (var r = 1; r <= lastRowNum; r++) {
+          var row = sheet.getRow(r);
+          if (!row) {
+            rows.push({});
+            continue;
+          }
+
+          var obj = {};
+          for (var cc = 0; cc < lastCell; cc++) {
+            var h = headerMap[cc];
+            if (!h) continue;
+            obj[h] = getCellAsString(row.getCell(cc));
+          }
+          rows.push(obj);
+        }
+
+        out.push({ sheetName: sheetName, headers: headers, rows: rows });
+      }
+
+      return out;
+    } finally {
+      try { wb.close(); } catch (e2) { }
+    }
+  } finally {
+    try { fis.close(); } catch (e3) { }
+  }
+}
+
+
+// ==========================================================================
+// XLSX READER (Apache POI) - ALL sheets, first row = headers
+// returns: [{ sheetName, headers:[...normalized...], rows:[{...}] }, ...]
+// NOTE: headers are normalized with normalizeHeader() and row keys use normalized headers
+// ==========================================================================
+function readXlsxAllSheets_Recurenta(localFilePath) {
+  var FileInputStream = Packages.java.io.FileInputStream;
+  var fis = new FileInputStream(localFilePath);
+
+  try {
+    var XSSFWorkbook = Packages.org.apache.poi.xssf.usermodel.XSSFWorkbook;
+    var wb = new XSSFWorkbook(fis);
+
+    try {
+      var out = [];
+      var sheetCount = wb.getNumberOfSheets();
+
+      for (var si = 0; si < sheetCount; si++) {
+        var sheet = wb.getSheetAt(si);
+        if (!sheet) continue;
+
+        var sheetName = "" + wb.getSheetName(si);
+
+        var headerRow = sheet.getRow(0);
+        if (!headerRow) {
+          out.push({ sheetName: sheetName, headers: [], rows: [] });
+          continue;
+        }
+
+        var headers = [];
+        var headerMap = {}; // colIndex -> normalizedHeader
+
+        var lastCell = headerRow.getLastCellNum();
+        if (lastCell < 0) lastCell = 0;
+
+        for (var c = 0; c < lastCell; c++) {
+          var cell = headerRow.getCell(c);
+          var h = normalizeHeader(getCellAsString(cell)); // same as recurenta
+          if (h) {
+            headers.push(h);
+            headerMap[c] = h;
+          }
+        }
+
+        var rows = [];
+        var lastRowNum = sheet.getLastRowNum();
+        for (var r = 1; r <= lastRowNum; r++) {
+          var row = sheet.getRow(r);
+          if (!row) {
+            rows.push({});
+            continue;
+          }
+
+          var obj = {};
+          for (var cc = 0; cc < lastCell; cc++) {
+            var headerName = headerMap[cc];
+            if (!headerName) continue;
+            obj[headerName] = getCellAsString(row.getCell(cc));
+          }
+          rows.push(obj);
+        }
+
+        out.push({ sheetName: sheetName, headers: headers, rows: rows });
+      }
+
+      return out;
+    } finally {
+      try { wb.close(); } catch (e2) { }
+    }
+  } finally {
+    try { fis.close(); } catch (e3) { }
+  }
+}
+
+
+function prepareIstoricRows(headers, rows, fileRes, sheetName) {
+  // Build normalized header map: normName -> originalHeader
+  var normMap = {};
+  for (var i = 0; i < headers.length; i++) {
+    var h = headers[i];
+    var n = normalizeHeaderName(h);
+    if (n && !normMap[n]) normMap[n] = h;
+  }
+
+  function findCol(candidates) {
+    for (var j = 0; j < candidates.length; j++) {
+      var key = normalizeHeaderName(candidates[j]);
+      if (normMap[key]) return normMap[key];
+    }
+    return null;
+  }
+
+  var c_skp = findCol(IST_COL_CANDIDATES.skp);
+  var c_localitate = findCol(IST_COL_CANDIDATES.localitate);
+
+  var c_tip_excel = findCol(IST_COL_CANDIDATES.tip_excel);     // legacy
+  var c_tip_produs = findCol(IST_COL_CANDIDATES.tip_produs);
+  var c_tip_contract = findCol(IST_COL_CANDIDATES.tip_contract);
+
+  var c_an_creare = findCol(IST_COL_CANDIDATES.an_creare);
+
+  var c_cod_cutie_obiect = findCol(IST_COL_CANDIDATES.cod_cutie_obiect);
+  var c_cod_obiect = findCol(IST_COL_CANDIDATES.cod_obiect);
+
+  var c_crc = findCol(IST_COL_CANDIDATES.crc);
+  var c_sumar = findCol(IST_COL_CANDIDATES.sumar);
+  var c_gama_de_la = findCol(IST_COL_CANDIDATES.gama_de_la);
+  var c_gama_pana_la = findCol(IST_COL_CANDIDATES.gama_pana_la);
+  var c_tip_doc_cod_arh = findCol(IST_COL_CANDIDATES.tip_doc_cod_arh);
+  var c_tip_pastrare = findCol(IST_COL_CANDIDATES.tip_pastrare);
+  var c_data_creare = findCol(IST_COL_CANDIDATES.data_creare);
+  var c_locatie_geo = findCol(IST_COL_CANDIDATES.locatie_geografica);
+  var c_divizie = findCol(IST_COL_CANDIDATES.divizie);
+  var c_departament = findCol(IST_COL_CANDIDATES.departament);
+
+
+  fileRes.log.push(
+    "Sheet '" + sheetName + "' header map: " +
+    "skp=" + (c_skp || "NULL") + ", localitate=" + (c_localitate || "NULL") +
+    ", tip=" + (c_tip_excel || "NULL") + ", tip_produs=" + (c_tip_produs || "NULL") +
+    ", tip_contract=" + (c_tip_contract || "NULL") +
+    ", an_creare=" + (c_an_creare || "NULL") +
+    ", cod_cutie_obiect=" + (c_cod_cutie_obiect || "NULL") +
+    ", cod_obiect=" + (c_cod_obiect || "NULL") +
+    ", crc=" + (c_crc || "NULL") +
+    ", sumar=" + (c_sumar || "NULL") +
+    ", gama_de_la=" + (c_gama_de_la || "NULL") +
+    ", gama_pana_la=" + (c_gama_pana_la || "NULL") +
+    ", tip_doc_cod_arh=" + (c_tip_doc_cod_arh || "NULL") +
+    ", tip_pastrare=" + (c_tip_pastrare || "NULL") +
+    ", data_creare=" + (c_data_creare || "NULL") +
+    ", locatie_geografica=" + (c_locatie_geo || "NULL") +
+    ", divizie=" + (c_divizie || "NULL") +
+    ", departament=" + (c_departament || "NULL")
+  );
+
+
+  var out = [];
+  var skippedEmpty = 0;
+
+  for (var r = 0; r < rows.length; r++) {
+    var row = rows[r];
+
+    // completely empty row -> skip
+    if (isRowEmpty(row)) {
+      skippedEmpty++;
+      continue;
+    }
+
+    // Read values (diacritics stripped, trimmed). Missing columns become "" => later NULL
+    var skp = stripDiacriticsValue(safeStr(c_skp ? row[c_skp] : ""));
+    var localitate = stripDiacriticsValue(safeStr(c_localitate ? row[c_localitate] : ""));
+
+    var tipProdus = stripDiacriticsValue(safeStr(c_tip_produs ? row[c_tip_produs] : ""));
+    var tipContract = stripDiacriticsValue(safeStr(c_tip_contract ? row[c_tip_contract] : ""));
+    var tipExcel = stripDiacriticsValue(safeStr(c_tip_excel ? row[c_tip_excel] : ""));
+
+    var anCreare = stripDiacriticsValue(safeStr(c_an_creare ? row[c_an_creare] : ""));
+
+    var cutieObj = stripDiacriticsValue(safeStr(c_cod_cutie_obiect ? row[c_cod_cutie_obiect] : ""));
+    var obiect = stripDiacriticsValue(safeStr(c_cod_obiect ? row[c_cod_obiect] : ""));
+
+    var crc = stripDiacriticsValue(safeStr(c_crc ? row[c_crc] : ""));
+    var sumar = stripDiacriticsValue(safeStr(c_sumar ? row[c_sumar] : ""));
+    var gamaDeLa = stripDiacriticsValue(safeStr(c_gama_de_la ? row[c_gama_de_la] : ""));
+    var gamaPanaLa = stripDiacriticsValue(safeStr(c_gama_pana_la ? row[c_gama_pana_la] : ""));
+    var tipDoc = stripDiacriticsValue(safeStr(c_tip_doc_cod_arh ? row[c_tip_doc_cod_arh] : ""));
+    var tipPastrare = stripDiacriticsValue(safeStr(c_tip_pastrare ? row[c_tip_pastrare] : ""));
+    var dataCreare = stripDiacriticsValue(safeStr(c_data_creare ? row[c_data_creare] : ""));
+    var locGeo = stripDiacriticsValue(safeStr(c_locatie_geo ? row[c_locatie_geo] : ""));
+    var divizie = stripDiacriticsValue(safeStr(c_divizie ? row[c_divizie] : ""));
+    var departament = stripDiacriticsValue(safeStr(c_departament ? row[c_departament] : ""));
+
+
+    // Tip_contract logic: if "tip" exists use it; else extract from Tip_Produs
+    if (!tipContract) {
+      if (tipExcel) {
+        tipContract = tipExcel;
+      } else {
+        var extracted = extractTipContractFromTipProdus(tipProdus);
+        tipContract = extracted.tipContract || "";
+        tipProdus = extracted.cleanedTipProdus || tipProdus;
+      }
+    }
+
+
+    // if row is "effectively empty" across all mapped fields -> skip
+    if (!skp && !localitate && !tipProdus && !anCreare && !tipContract && !cutieObj && !obiect &&
+      !crc && !sumar && !gamaDeLa && !gamaPanaLa && !tipDoc && !tipPastrare && !dataCreare && !locGeo && !divizie && !departament) {
+      skippedEmpty++;
+      continue;
+    }
+
+
+    out.push({
+      skp: skp || null,
+      Localitate: localitate || null,
+      Tip_Produs: tipProdus || null,
+      Tip_Contract: tipContract || null,
+      CRC: crc || null,
+      sumar: sumar || null,
+      gama_de_la: gamaDeLa || null,
+      gama_pana_la: gamaPanaLa || null,
+      tip_doc_cod_arh: tipDoc || null,
+      tip_pastrare: tipPastrare || null,
+      data_creare: dataCreare || null,
+      locatie_geografica: locGeo || null,
+      divizie: divizie || null,
+      departament: departament || null,
+      an_creare: anCreare || null,
+      cod_cutie_obiect: cutieObj || null,
+      cod_obiect: obiect || null
+    });
+
+  }
+
+  fileRes.log.push("Sheet '" + sheetName + "': prepared rows=" + out.length + ", skipped empty=" + skippedEmpty);
+  return { rows: out, skippedEmpty: skippedEmpty };
+}
+
+function insertIstoricRows(rows, fileRes) {
+  if (!rows || rows.length === 0) {
+    fileRes.log.push("No ISTORIC rows to insert (0).");
+    return 0;
+  }
+
+  var BATCH = 200;
+  var insertedTotal = 0;
+
+  for (var i = 0; i < rows.length; i += BATCH) {
+    var chunk = rows.slice(i, i + BATCH);
+    var sql = buildInsertSqlIstoric_NoDup(chunk);
+
+    fileRes.log.push("ISTORIC insert batch " + (i / BATCH + 1) + " size=" + chunk.length);
+
+    var affected = db.doUpdate(1, sql);
+    if (affected == null) affected = 0;
+    insertedTotal += affected;
+  }
+
+  var skippedDup = rows.length - insertedTotal;
+  if (skippedDup < 0) skippedDup = 0;
+
+  fileRes.log.push("ISTORIC inserted=" + insertedTotal + ", skipped duplicates=" + skippedDup);
+  fileRes.skippedDuplicateRows = skippedDup;
+  return insertedTotal;
+}
+
+function buildInsertSqlIstoric_NoDup(chunk) {
+  var values = [];
+
+  for (var i = 0; i < chunk.length; i++) {
+    var r = chunk[i];
+
+    // base
+    var skpSql = toSqlStringOrNull(r.skp);
+    var locSql = toSqlStringOrNull(r.Localitate);
+    var tipProdSql = toSqlStringOrNull(r.Tip_Produs);
+    var tipContrSql = toSqlStringOrNull(r.Tip_Contract || r.Tip_contract); // tolerate either key
+    var anSql = toSqlStringOrNull(r.an_creare);
+    var cutieMareSql = toSqlStringOrNull(r.cod_cutie_obiect);
+    var cutieMicaSql = toSqlStringOrNull(r.cod_obiect);
+
+    // extras
+    var crcSql = toSqlStringOrNull(r.CRC);
+    var sumarSql = toSqlStringOrNull(r.sumar);
+    var gamaDeLaSql = toSqlStringOrNull(r.gama_de_la);
+    var gamaPanaSql = toSqlStringOrNull(r.gama_pana_la);
+    var tipDocSql = toSqlStringOrNull(r.tip_doc_cod_arh);
+    var tipPastrSql = toSqlStringOrNull(r.tip_pastrare);
+    var dataCreSql = toSqlStringOrNull(r.data_creare);
+    var locGeoSql = toSqlStringOrNull(r.locatie_geografica);
+    var divizieSql = toSqlStringOrNull(r.divizie);
+    var deptSql = toSqlStringOrNull(r.departament);
+
+    // metadata
+    var runIdSql = toSqlStringOrNull(r.import_run_id);
+    var fileNameSql = toSqlStringOrNull(r.import_file_name);
+
+    values.push("(" +
+      skpSql + "," +
+      locSql + "," +
+      tipProdSql + "," +
+      tipContrSql + "," +
+      crcSql + "," +
+      sumarSql + "," +
+      gamaDeLaSql + "," +
+      gamaPanaSql + "," +
+      tipDocSql + "," +
+      tipPastrSql + "," +
+      dataCreSql + "," +
+      locGeoSql + "," +
+      divizieSql + "," +
+      deptSql + "," +
+      anSql + "," +
+      cutieMareSql + "," +
+      cutieMicaSql + "," +
+      runIdSql + "," +
+      fileNameSql +
+      ")");
+  }
+
+  var sql =
+    "INSERT INTO " + SQL_TABLE_IST + " " +
+    "(skp, Localitate, Tip_Produs, Tip_Contract, CRC, sumar, gama_de_la, gama_pana_la, tip_doc_cod_arh, tip_pastrare, data_creare, locatie_geografica, divizie, departament, an_creare, cod_cutie_obiect, cod_obiect, import_run_id, import_file_name) " +
+    "SELECT v.skp, v.Localitate, v.Tip_Produs, v.Tip_Contract, v.CRC, v.sumar, v.gama_de_la, v.gama_pana_la, v.tip_doc_cod_arh, v.tip_pastrare, v.data_creare, v.locatie_geografica, v.divizie, v.departament, v.an_creare, v.cod_cutie_obiect, v.cod_obiect, v.import_run_id, v.import_file_name " +
+    "FROM (VALUES " + values.join(",") + ") " +
+    "v(skp, Localitate, Tip_Produs, Tip_Contract, CRC, sumar, gama_de_la, gama_pana_la, tip_doc_cod_arh, tip_pastrare, data_creare, locatie_geografica, divizie, departament, an_creare, cod_cutie_obiect, cod_obiect, import_run_id, import_file_name) " +
+    "WHERE NOT EXISTS ( " +
+    "  SELECT 1 FROM " + SQL_TABLE_IST + " t " +
+    "  WHERE ISNULL(LTRIM(RTRIM(t.skp)), '') = ISNULL(LTRIM(RTRIM(v.skp)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.Localitate)), '') = ISNULL(LTRIM(RTRIM(v.Localitate)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.Tip_Produs)), '') = ISNULL(LTRIM(RTRIM(v.Tip_Produs)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.Tip_Contract)), '') = ISNULL(LTRIM(RTRIM(v.Tip_Contract)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.CRC)), '') = ISNULL(LTRIM(RTRIM(v.CRC)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.sumar)), '') = ISNULL(LTRIM(RTRIM(v.sumar)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.gama_de_la)), '') = ISNULL(LTRIM(RTRIM(v.gama_de_la)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.gama_pana_la)), '') = ISNULL(LTRIM(RTRIM(v.gama_pana_la)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.tip_doc_cod_arh)), '') = ISNULL(LTRIM(RTRIM(v.tip_doc_cod_arh)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.tip_pastrare)), '') = ISNULL(LTRIM(RTRIM(v.tip_pastrare)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.data_creare)), '') = ISNULL(LTRIM(RTRIM(v.data_creare)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.locatie_geografica)), '') = ISNULL(LTRIM(RTRIM(v.locatie_geografica)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.divizie)), '') = ISNULL(LTRIM(RTRIM(v.divizie)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.departament)), '') = ISNULL(LTRIM(RTRIM(v.departament)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.an_creare)), '') = ISNULL(LTRIM(RTRIM(v.an_creare)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.cod_cutie_obiect)), '') = ISNULL(LTRIM(RTRIM(v.cod_cutie_obiect)), '') " +
+    "    AND ISNULL(LTRIM(RTRIM(t.cod_obiect)), '') = ISNULL(LTRIM(RTRIM(v.cod_obiect)), '') " +
+    ");";
+
+  return sql;
+}
+
+
+
+
+function toSqlStringOrNull(val) {
+  var s = safeStr(val);
+  if (!s) return "NULL";
+  return "'" + escapeSql(s) + "'";
+}
+
+// Header normalization like python: diacritics removed, lowercase, punctuation -> space, collapse spaces
+function normalizeHeaderName(name) {
+  var s = safeStr(name);
+  if (!s) return "";
+
+  s = stripDiacriticsValue(s);
+  s = "" + s;
+  s = s.toLowerCase();
+
+  // replace non [0-9a-z ] with space
+  s = s.replace(/[^0-9a-z ]+/g, " ");
+  s = s.replace(/\s+/g, " ").trim();
+  return s;
+}
+
+// Remove diacritics from values
+function stripDiacriticsValue(x) {
+  if (x == null) return x;
+
+  // force JS string
+  var s = "" + x;
+
+  try {
+    var Normalizer = Packages.java.text.Normalizer;
+    var Form = Packages.java.text.Normalizer.Form;
+
+    // Normalizer returns java.lang.String -> force back to JS string immediately
+    s = "" + Normalizer.normalize(s, Form.NFKD);
+
+    // now regex replace is the JS String.prototype.replace, not Java overload
+    s = ("" + s).replace(/[\u0300-\u036f]/g, "");
+  } catch (e) {
+    // ignore, keep s
+    s = "" + s;
+  }
+
+  // Romanian special cases (ensure JS string each time)
+  s = ("" + s).replace(/[șş]/g, "s").replace(/[ȘŞ]/g, "S");
+  s = ("" + s).replace(/[țţ]/g, "t").replace(/[ȚŢ]/g, "T");
+  s = ("" + s).replace(/[ăâ]/g, "a").replace(/[ĂÂ]/g, "A");
+  s = ("" + s).replace(/[î]/g, "i").replace(/[Î]/g, "I");
+
+  s = ("" + s).replace(/\s+/g, " ").trim();
+  return s;
+}
+
+
+function extractTipContractFromTipProdus(tipProdus) {
+  var s = safeStr(tipProdus);
+  if (!s) return { tipContract: null, cleanedTipProdus: tipProdus };
+
+  var m = TIP_CONTRACT_RE.exec(s);
+  if (!m) return { tipContract: null, cleanedTipProdus: tipProdus };
+
+  var tipContract = (m[1] || "").toUpperCase();
+
+  // remove first match only
+  var cleaned = s.replace(TIP_CONTRACT_RE, " ");
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+
+  return { tipContract: tipContract, cleanedTipProdus: cleaned };
+}
+
 
 function toSqlIntOrNull(val) {
   var s = safeStr(val);
@@ -338,20 +1083,12 @@ function insertRecurentaRows(rows, fileRes) {
 }
 
 function buildInsertSqlRecurenta_NoDup(chunk) {
-  // Inserts only rows that do NOT already exist (according to your duplicate-barrier logic)
-  // Note: uuid is not included -> DB default / PK generation remains your choice.
-
   var values = [];
+
   for (var i = 0; i < chunk.length; i++) {
     var r = chunk[i];
 
-    // an is int in DB; try to keep numeric
-    var anVal = safeStr(r.an);
-    //var anSql = (anVal === "" || anVal == null) ? "NULL" : ("" + parseInt(anVal, 10));
     var anSql = toSqlIntOrNull(r.an);
-
-
-    //if (anSql === "NaN") anSql = "NULL";
 
     values.push("(" +
       "'" + escapeSql(r.skp) + "'," +
@@ -361,16 +1098,18 @@ function buildInsertSqlRecurenta_NoDup(chunk) {
       "'" + escapeSql(r.data_arhivare) + "'," +
       "'" + escapeSql(r.numar_ordine) + "'," +
       "'" + escapeSql(r.crc) + "'," +
-      anSql +
-    ")");
+      anSql + "," +
+      "'" + escapeSql(r.import_run_id) + "'," +
+      "'" + escapeSql(r.import_file_name) + "'" +
+      ")");
   }
 
   var sql =
     "INSERT INTO [Lucru_EON].[dbo].[arh_arhiva_recurenta] " +
-    "(skp, cod_nlc, numar_contract, cod_client, data_arhivare, numar_ordine, crc, an) " +
-    "SELECT v.skp, v.cod_nlc, v.numar_contract, v.cod_client, v.data_arhivare, v.numar_ordine, v.crc, v.an " +
+    "(skp, cod_nlc, numar_contract, cod_client, data_arhivare, numar_ordine, crc, an, import_run_id, import_file_name) " +
+    "SELECT v.skp, v.cod_nlc, v.numar_contract, v.cod_client, v.data_arhivare, v.numar_ordine, v.crc, v.an, v.import_run_id, v.import_file_name " +
     "FROM (VALUES " + values.join(",") + ") " +
-    "v(skp, cod_nlc, numar_contract, cod_client, data_arhivare, numar_ordine, crc, an) " +
+    "v(skp, cod_nlc, numar_contract, cod_client, data_arhivare, numar_ordine, crc, an, import_run_id, import_file_name) " +
     "WHERE NOT EXISTS ( " +
     "  SELECT 1 " +
     "  FROM [Lucru_EON].[dbo].[arh_arhiva_recurenta] t " +
@@ -386,6 +1125,7 @@ function buildInsertSqlRecurenta_NoDup(chunk) {
 
   return sql;
 }
+
 
 
 
@@ -477,10 +1217,10 @@ function readXlsxFirstSheet(localFilePath) {
 
       return { headers: headers, rows: rows };
     } finally {
-      try { wb.close(); } catch (e2) {}
+      try { wb.close(); } catch (e2) { }
     }
   } finally {
-    try { fis.close(); } catch (e3) {}
+    try { fis.close(); } catch (e3) { }
   }
 }
 
@@ -526,7 +1266,7 @@ function getCellAsString(cell) {
     return "";
   } catch (e) {
     // fallback
-    try { return (cell.toString() || "") + ""; } catch (e2) {}
+    try { return (cell.toString() || "") + ""; } catch (e2) { }
     return "";
   }
 }
@@ -609,7 +1349,7 @@ function sftpDownloadToLocal(sftp, remotePath, localPath) {
   try {
     sftp.get(remotePath, fos);
   } finally {
-    try { fos.close(); } catch (e) {}
+    try { fos.close(); } catch (e) { }
   }
 }
 
@@ -628,7 +1368,7 @@ function safeSftpUpload(sftp, localPath, remotePath) {
     try {
       sftp.put(fis, remotePath);
     } finally {
-      try { fis.close(); } catch (e2) {}
+      try { fis.close(); } catch (e2) { }
     }
   } catch (e) {
     throw "Failed to upload log to SFTP. local=" + localPath + " remote=" + remotePath + " error=" + e;
@@ -652,8 +1392,8 @@ function writeLocalTextFile(path, content) {
   try {
     bw.write(content);
   } finally {
-    try { bw.close(); } catch (e) {}
-    try { fw.close(); } catch (e2) {}
+    try { bw.close(); } catch (e) { }
+    try { fw.close(); } catch (e2) { }
   }
 }
 
